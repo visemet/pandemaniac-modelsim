@@ -6,26 +6,18 @@ def create_adj_list(graph):
   create_adj_list
   ---------------
   Creates the adjacency list representation of the graph from a file containing
-  the graph.
+  the graph. The file is in JSON format.
 
   graph: The graph to create an adjacency list for.
   returns: An adjacency list.
   """
-  adj_list = {}
-  graph_file = open("google.txt", "r")
-
-  for line in graph_file:
-    from_node = line.split()[0]
-    to_node = line.split()[1]
-
-    if from_node not in adj_list:
-      adj_list[from_node] = [to_node]
-    else:
-      adj_list[from_node].append(to_node)
+  graph_file = open("TODO", "r")
+  adj_list = eval(graph_file.readline())
+  graph_file.close()
   return adj_list
 
 
-def read_nodes(graph, teams):
+def read_nodes(graph, valid_nodes, teams):
   """
   read_nodes
   ----------
@@ -37,9 +29,22 @@ def read_nodes(graph, teams):
   returns: A dictionary containing the key as the team and the value as the
            list of chosen nodes.
   """
-  node_list = {}
+  team_nodes = {}
   for team in teams:
-    team_file = open("TODO", "r")
+    team_file = open("TODO", "r") # TODO file should have graph and team
+    # Read in all of the nodes and filter out spaces and newlines.
+    nodes = filter(lambda x: x.strip(), team_file.read().split("\n"))
+    team_file.close()
+
+    # If the team submits an invalid list of nodes (i.e. nodes that do not
+    # exist, then their entire submission is invalidated TODO.
+    is_valid = reduce(lambda x, node: x and (node in valid_nodes), nodes)
+    if is_valid:
+      team_nodes[team] = nodes
+    else:
+      team_nodes[team] = []
+
+  return node_list
 
 
 if __name__ == "__main__":
@@ -54,7 +59,7 @@ if __name__ == "__main__":
   adj_list = create_adj_list(graph)
 
   # Read in the node selection for each team.
-  node_list = read_nodes(graph, teams)
+  node_list = read_nodes(graph, adj_list.keys(), teams)
 
   # Run the simulation.
-  simulation.run(node_list, adj_list)
+  output = simulation.run(node_list, adj_list)

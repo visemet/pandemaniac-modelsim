@@ -5,8 +5,8 @@ def create_adj_list(graph):
   """
   create_adj_list
   ---------------
-  Creates the adjacency list representation of the graph from a file containing the
-  graph.
+  Creates the adjacency list representation of the graph from a file containing
+  the graph.
 
   graph: The graph to create an adjacency list for.
   returns: An adjacency list.
@@ -25,6 +25,23 @@ def create_adj_list(graph):
   return adj_list
 
 
+def read_nodes(graph, teams):
+  """
+  read_nodes
+  ----------
+  Reads in the node selection for a team and creates a mapping of the team to
+  the nodes they chose.
+
+  graph: The corresponding graph.
+  teams: The list of teams.
+  returns: A dictionary containing the key as the team and the value as the
+           list of chosen nodes.
+  """
+  node_list = {}
+  for team in teams:
+    team_file = open("TODO", "r")
+
+
 if __name__ == "__main__":
   # Parse the command-line arguments to get the graph and teams participating.
   parser = argparse.ArgumentParser(description='Get the graph and teams.')
@@ -36,5 +53,8 @@ if __name__ == "__main__":
   # Create the adjacency list for the graph.
   adj_list = create_adj_list(graph)
 
+  # Read in the node selection for each team.
+  node_list = read_nodes(graph, teams)
+
   # Run the simulation.
-  simulation.run(teams, adj_list)
+  simulation.run(node_list, adj_list)

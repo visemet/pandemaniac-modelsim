@@ -8,7 +8,18 @@ def compute_next(node, adj_list, node_team):
   ------------
   TODO
   """
-  return "2"
+
+  # Get the neighbors and find the team that covers the most neighbors.
+  neighbors = adj_list[node]
+  team_count = Counter([node_team[x] for x in neighbors])
+  most_common = team_count.most_common(1)[0]
+
+  # Don't convert if the team is None or there is no majority team. Return its
+  # original team.
+  if most_common[0] is None or most_common[1] < len(neighbors) / 2:
+    return node_team[node]
+  else:
+    return most_common[0]
 
 
 def run(team_nodes, adj_list):
@@ -22,10 +33,22 @@ def run(team_nodes, adj_list):
   adj_list: The adjacency list representation of the graph.
   """
   output = {}
-  generation = 0
   # Stores a mapping of nodes to their team.
   node_team = dict([(node, None) for node in adj_list])
+  for (team, nodes) in team_nodes.items():
+    print str((team, nodes))
+    for node in nodes:
+      # More than one team has chosen a node. TODO they cancel out
+      if node_team[node] is not None:
+        node_team[node] = "__CONFLICT__"
+      else:
+        node_team[node] = team
+  for (node, team) in node_team.items():
+    if team == "__CONFLICT__":
+      node_team[node] = None
+  output["0"] = to_team_mapping(node_team)
 
+  generation = 1
   # Keep calculating the epidemic until it stops changing.
   while not is_stable(generation, output):
     for node in adj_list:

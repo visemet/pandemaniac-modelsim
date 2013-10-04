@@ -1,5 +1,4 @@
 from collections import Counter, OrderedDict
-import json
 
 def compute_next(node, adj_list, node_team):
   """
@@ -38,6 +37,10 @@ def run(team_nodes, adj_list):
   team_nodes: The dictionary containing a mapping of a team name and the nodes
               they chose.
   adj_list: The adjacency list representation of the graph.
+
+  returns: A tuple (output, results) where the output is a dictionary object
+           containing a mapping of each generation to the diffs generated and
+           the results is the final mapping of teams to their nodes.
   """
 
   # Stores a mapping of nodes to their team.
@@ -82,7 +85,7 @@ def run(team_nodes, adj_list):
     output[str(generation)] = to_team_mapping(diff)
     generation += 1
 
-  return json.dumps(output)
+  return (output, to_team_mapping(node_team))
 
 
 def is_stable(generation, output):
@@ -117,10 +120,14 @@ def to_team_mapping(diff):
   """
   to_team_mapping
   ---------------
-  TODO
+  Converts a dictionary from node -> team to team -> nodes.
+
+  diff: The dictionary to convert.
+  returns: A new dictionary containing a mapping of teams to their nodes.
   """
   team_nodes = {}
   for node, team in diff.items():
+    # Ignore conflicts.
     if team == "__CONFLICT__":
       continue
     if team in team_nodes:

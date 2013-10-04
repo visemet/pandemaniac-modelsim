@@ -65,6 +65,23 @@ def read_nodes(graph, valid_nodes, teams):
   return team_nodes
 
 
+def update_points(results):
+  """
+  update_results
+  --------------
+  Update the results of this run.
+
+  results: The results of this run. Is a dictionary with the keys as the teams
+           and values as the nodes for that team. Computes the number of points
+           each team gets by the number of nodes they have.
+  """
+
+  # Put the teams in order of number of nodes they have, sorted most to least.
+  ranked_teams = sorted(results, key=lambda k: len(results[k]), reverse=True)
+  
+  # TODO insert into database, actually give them points...
+  print str(ranked_teams)
+
 if __name__ == "__main__":
   # Parse the command-line arguments to get the graph and teams participating.
   parser = argparse.ArgumentParser(description='Get the graph and teams.')
@@ -79,12 +96,16 @@ if __name__ == "__main__":
   # Read in the node selection for each team.
   team_nodes = read_nodes(graph, adj_list.keys(), teams)
 
-  # Run the simulation and output results to file.
-  output = simulation.run(team_nodes, adj_list)
+  # Run the simulation and output the run to file.
+  (output, results) = simulation.run(team_nodes, adj_list)  
   output_file = open(OUTPUT_FOLDER + graph + "TODO" + ".txt", "w") # TODO need a better name for file?
-  output_file.write(str(output))
+  output_file.write(str(json.dumps(output)))
+  output_file.close()
+
+  # Get the final results of teams to their nodes and update their points in
+  # the database.
+  update_points(results)
+  print str(results)
   
-  
-  # TODO figure out the winners and store in the database
-  
-  print str(output)
+  # TODO what to do if some nodes just have no winners. (our epidemic model
+  # doesn't work for even number of players?)

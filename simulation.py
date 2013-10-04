@@ -1,12 +1,18 @@
-from collections import Counter
+from collections import Counter, OrderedDict
 import json
-
 
 def compute_next(node, adj_list, node_team):
   """
   compute_next
   ------------
-  TODO
+  Computes the next team for the node, depending on the epidemic mode.
+
+  node: The node to compute the next team.
+  adj_list: The adjacency list representation of the graph.
+  node_team: The mapping of nodes to their team.
+
+  returns: A tuple containing (team, team_changed) where team is the new team
+           of this node, and is_changed is set to True if the team changed.
   """
 
   # Get the neighbors and find the team that covers the most neighbors.
@@ -17,46 +23,63 @@ def compute_next(node, adj_list, node_team):
   # Don't convert if the team is None or there is no majority team. Return its
   # original team.
   if most_common[0] is None or most_common[1] < len(neighbors) / 2:
-    return node_team[node]
+    return (node_team[node], False)
   else:
-    return most_common[0]
+    return (most_common[0], True)
 
 
 def run(team_nodes, adj_list):
   """
   run
   ---
-  TODO
+  Runs the epidemic simulation for each cycle of the epidemic until it stops
+  changing.
 
   team_nodes: The dictionary containing a mapping of a team name and the nodes
               they chose.
   adj_list: The adjacency list representation of the graph.
   """
-  output = {}
+
   # Stores a mapping of nodes to their team.
   node_team = dict([(node, None) for node in adj_list])
+
+  # Output to be written to file.
+  output = OrderedDict()
+  # The current diff being generated. Contains only new mappings of nodes to
+  # their teams.
+  diff = {}
+
+  # Initially set the node to the team that chooses it. If more than one team
+  # chooses the same node, then no team gets that node.
   for (team, nodes) in team_nodes.items():
-    print str((team, nodes))
     for node in nodes:
-      # More than one team has chosen a node. TODO they cancel out
+      # More than one team has chosen a node. They cancel out.
       if node_team[node] is not None:
         node_team[node] = "__CONFLICT__"
+        diff[node] = "__CONFLICT__"
       else:
         node_team[node] = team
+        diff[node] = team
+  # Now set all the conflicts back to None since no team gets those nodes.
   for (node, team) in node_team.items():
     if team == "__CONFLICT__":
       node_team[node] = None
-  output["0"] = to_team_mapping(node_team)
 
+  # Initial generation.
+  output["0"] = to_team_mapping(diff)
   generation = 1
+
   # Keep calculating the epidemic until it stops changing.
   while not is_stable(generation, output):
+    diff = {}
     for node in adj_list:
       # Compute the next team that this node has converted to.
-      node_team[node] = compute_next(node, adj_list, node_team)
+      (node_team[node], team_changed) = compute_next(node, adj_list, node_team)
+      if team_changed:
+        diff[node] = node_team[node]
 
     # Convert the mapping of a node to the team into teams and their nodes.
-    output[str(generation)] = to_team_mapping(node_team)
+    output[str(generation)] = to_team_mapping(diff)
     generation += 1
 
   return json.dumps(output)
@@ -90,14 +113,16 @@ def is_stable(generation, output):
   return True
 
 
-def to_team_mapping(node_team):
+def to_team_mapping(diff):
   """
   to_team_mapping
   ---------------
   TODO
   """
   team_nodes = {}
-  for node, team in node_team.items():
+  for node, team in diff.items():
+    if team == "__CONFLICT__":
+      continue
     if team in team_nodes:
       team_nodes[team].append(node)
     else:

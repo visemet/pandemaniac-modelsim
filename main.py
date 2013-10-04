@@ -1,12 +1,15 @@
 import argparse
 import json
 import os
-import pymongo
+from pymongo import MongoClient
 import simulation
 
 GRAPH_FOLDER = "private/graphs/"
 TEAMS_FOLDER = "private/uploads/"
 OUTPUT_FOLDER = "private/runs/"
+
+DB_SERVER = "localhost"
+DB_PORT = 27017
 
 def create_adj_list(graph):  
   """
@@ -65,7 +68,7 @@ def read_nodes(graph, valid_nodes, teams):
   return team_nodes
 
 
-def update_points(results):
+def update_points(results, db_client):
   """
   update_results
   --------------
@@ -74,6 +77,7 @@ def update_points(results):
   results: The results of this run. Is a dictionary with the keys as the teams
            and values as the nodes for that team. Computes the number of points
            each team gets by the number of nodes they have.
+  db_client: The client for the MongoDB connection.
   """
 
   # Put the teams in order of number of nodes they have, sorted most to least.
@@ -96,6 +100,9 @@ if __name__ == "__main__":
   # Read in the node selection for each team.
   team_nodes = read_nodes(graph, adj_list.keys(), teams)
 
+  # Connect to MongoDB to store results.
+  db_client = MongoClient(DB_SERVER, DB_PORT)
+
   # Run the simulation and output the run to file.
   (output, results) = simulation.run(team_nodes, adj_list)  
   output_file = open(OUTPUT_FOLDER + graph + "TODO" + ".txt", "w") # TODO need a better name for file?
@@ -104,7 +111,7 @@ if __name__ == "__main__":
 
   # Get the final results of teams to their nodes and update their points in
   # the database.
-  update_points(results)
+  update_points(results, db_client)
   print str(results)
   
   # TODO what to do if some nodes just have no winners. (our epidemic model

@@ -12,6 +12,8 @@ OUTPUT_FOLDER = "private/runs/"
 DB_SERVER = "localhost"
 DB_PORT = 27017
 
+POINTS = {1:20, 2:15, 3:12, 4:9, 5:7, 6:5, 7:4, 8:3, 9:2, 10:1}
+
 def create_adj_list(graph):  
   """
   create_adj_list
@@ -82,14 +84,17 @@ def update_points(results, db):
   """
 
   # Put the teams in order of number of nodes they have, sorted most to least.
+  del results[None]
   ranked_teams = sorted(results, key=lambda k: len(results[k]), reverse=True)
-  #ranked_teams = ranked_teams.remove(None) # TODO even teams cancel out
 
-  #for i in range(len(ranked_teams)):
-  #  print i
-  
-  # TODO insert into database, actually give them points...
+  # Olympic scoring. Add the score to the database.
+  for i in range(1, len(ranked_teams) + 1):
+    db.test.ranks.update( \
+      {"team": ranked_teams[i - 1]}, \
+      {"$inc": {"score": POINTS[i]}}, upsert=True)
+
   print str(ranked_teams)
+
 
 if __name__ == "__main__":
   # Parse the command-line arguments to get the graph and teams participating.

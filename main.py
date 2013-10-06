@@ -3,6 +3,7 @@ import json
 import os
 from pymongo import MongoClient
 import simulation
+import time
 
 GRAPH_FOLDER = "private/graphs/"
 TEAMS_FOLDER = "private/uploads/"
@@ -68,7 +69,7 @@ def read_nodes(graph, valid_nodes, teams):
   return team_nodes
 
 
-def update_points(results, db_client):
+def update_points(results, db):
   """
   update_results
   --------------
@@ -77,11 +78,15 @@ def update_points(results, db_client):
   results: The results of this run. Is a dictionary with the keys as the teams
            and values as the nodes for that team. Computes the number of points
            each team gets by the number of nodes they have.
-  db_client: The client for the MongoDB connection.
+  db: The client for the MongoDB connection.
   """
 
   # Put the teams in order of number of nodes they have, sorted most to least.
   ranked_teams = sorted(results, key=lambda k: len(results[k]), reverse=True)
+  #ranked_teams = ranked_teams.remove(None) # TODO even teams cancel out
+
+  #for i in range(len(ranked_teams)):
+  #  print i
   
   # TODO insert into database, actually give them points...
   print str(ranked_teams)
@@ -100,18 +105,22 @@ if __name__ == "__main__":
   # Read in the node selection for each team.
   team_nodes = read_nodes(graph, adj_list.keys(), teams)
 
-  # Connect to MongoDB to store results.
-  db_client = MongoClient(DB_SERVER, DB_PORT)
-
   # Run the simulation and output the run to file.
   (output, results) = simulation.run(team_nodes, adj_list)  
-  output_file = open(OUTPUT_FOLDER + graph + "TODO" + ".txt", "w") # TODO need a better name for file?
+  output_filename = graph + "-" + str(time.time()) + ".txt"
+  output_file = open(OUTPUT_FOLDER + output_filename, "w")
   output_file.write(str(json.dumps(output)))
   output_file.close()
 
+  # Connect to MongoDB to store results.
+  db = MongoClient(DB_SERVER, DB_PORT)
+  db.test.attempts.update( \
+    {"graph": graph, "team": {"$in": teams}}, \
+    {"$set": {"file": output_filename}}, multi=True)
+
   # Get the final results of teams to their nodes and update their points in
   # the database.
-  update_points(results, db_client)
+  update_points(results, db)
   print str(results)
   
   # TODO what to do if some nodes just have no winners. (our epidemic model

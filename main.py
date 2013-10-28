@@ -111,7 +111,7 @@ if __name__ == "__main__":
   team_nodes = read_nodes(graph, adj_list.keys(), teams)
 
   # Run the simulation and output the run to file.
-  (output, results) = simulation.run(team_nodes, adj_list)  
+  (output, results) = simulation.run(team_nodes, adj_list)
   output_filename = graph + "-" + str(time.time()) + ".txt"
   output_file = open(OUTPUT_FOLDER + output_filename, "w")
   output_file.write(str(json.dumps(output)))

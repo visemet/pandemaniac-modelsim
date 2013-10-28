@@ -21,6 +21,9 @@ def compute_next(node, adj_list, node_team):
 
   # Don't convert if the team is None or there is no majority team. Return its
   # original team.
+  
+  # TODO? if no team is majority, don't spread?
+  
   if most_common[0] is None or most_common[1] < len(neighbors) / 2:
     return (node_team[node], False)
   else:

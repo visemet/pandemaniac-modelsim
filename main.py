@@ -1,3 +1,10 @@
+"""
+Class: main.py
+--------------
+Main class for the epidemic model simulator. Handles input and output of files
+and to the database.
+"""
+
 import argparse
 import json
 import os
@@ -5,19 +12,22 @@ from pymongo import MongoClient
 import simulation
 import time
 
+# Location of files.
 GRAPH_FOLDER = "private/graphs/"
 TEAMS_FOLDER = "private/uploads/"
 OUTPUT_FOLDER = "private/runs/"
 
+# MongoDB configuration.
 DB_SERVER = "localhost"
 DB_PORT = 27017
 
+# Points for places.
 POINTS = {1:20, 2:15, 3:12, 4:9, 5:7, 6:5, 7:4, 8:3, 9:2, 10:1}
 
 def create_adj_list(graph):  
   """
-  create_adj_list
-  ---------------
+  Function: create_adj_list
+  -------------------------
   Creates the adjacency list representation of the graph from a file containing
   the graph. The file is in JSON format.
 
@@ -32,8 +42,8 @@ def create_adj_list(graph):
 
 def read_nodes(graph, valid_nodes, teams):
   """
-  read_nodes
-  ----------
+  Function: read_nodes
+  --------------------
   Reads in the node selection for a team and creates a mapping of the team to
   the nodes they chose.
 
@@ -73,8 +83,8 @@ def read_nodes(graph, valid_nodes, teams):
 
 def update_points(results, db):
   """
-  update_results
-  --------------
+  Function: update_results
+  ------------------------
   Update the results of this run.
 
   results: The results of this run. Is a dictionary with the keys as the teams
@@ -127,6 +137,3 @@ if __name__ == "__main__":
   # the database.
   update_points(results, db)
   print str(results)
-  
-  # TODO what to do if some nodes just have no winners. (our epidemic model
-  # doesn't work for even number of players?)

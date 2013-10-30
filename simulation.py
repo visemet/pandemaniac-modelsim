@@ -45,7 +45,7 @@ def run(team_nodes, adj_list):
     node_team_copy = deepcopy(node_team)
     # Find the new color for every node. The model can be changed.
     for node in adj_list:
-      (changed, color) = models.next_majority_all(adj_list, node_team, node)
+      (changed, color) = models.next_random_weighing(adj_list, node_team, node)
       # Store the node's new color only if it changed.
       if changed:
         diff[node] = color

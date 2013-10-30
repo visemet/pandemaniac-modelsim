@@ -5,8 +5,8 @@ Contains the different epidemic models.
 """
 
 from collections import Counter
-from copy import deepcopy
-  
+import random
+
 def init_conflict(team_nodes, node_team):
   """
   Function: init_conflict
@@ -41,7 +41,7 @@ def next_majority_all(adj_list, node_team, node):
   """
   Function: next_majority_all
   ---------------------------
-  Computes the next color for each node. The node takes on the color the
+  Computes the next color for a node. The node takes on the color the
   majority of its neighbors have (including uncolored nodes).
 
   adj_list: The adjacency list.
@@ -66,7 +66,7 @@ def next_majority_colored(adj_list, node_team, node):
   """
   Function: next_majority_colored
   -------------------------------
-  Computes the next color for each node. The node takes on the color that
+  Computes the next color for a node. The node takes on the color that
   the majority of its colored neighbors have.
 
   adj_list: The adjacency list.
@@ -83,5 +83,31 @@ def next_majority_colored(adj_list, node_team, node):
   most_common = team_count.most_common(1)
   if len(most_common) > 0 and most_common[0][1] >= len(colored_neighbors) / 2.0:
     return (True, most_common[0][0])
+
+  return (False, node_team[node])
+
+
+def next_random_weighing(adj_list, node_team, node):
+  """
+  Function: next_random_weighing
+  ------------------------------
+  Computes the next color for a node. The node randomly takes on a color of one
+  of its neighbors, where the probability of this occuring is proportional to
+  the number of neighbors with the same color.
+
+  adj_list: The adjacency list.
+  node_team: Mapping of nodes to their team.
+  node: The node to compute the next color for.
+  returns: A tuple containing a boolean of whether or not te node's color
+           changed, and the node's current/new color.
+  """
+  # Get the neighbors and the colors of those neighbors.
+  neighbors = adj_list[node]
+  colored_neighbors = filter(None, [node_team[x] for x in neighbors])
+  team_count = Counter(colored_neighbors)
+
+  if len(team_count) > 0:
+    probs = reduce(lambda x, y: x + y, [[x[0]] * int(x[1]) for x in team_count.items()])
+    return (True, random.choice(probs))
 
   return (False, node_team[node])

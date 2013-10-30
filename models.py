@@ -7,6 +7,8 @@ Contains the different epidemic models.
 from collections import Counter
 import random
 
+SEED = 121121121
+
 def init_conflict(team_nodes, node_team):
   """
   Function: init_conflict
@@ -101,6 +103,8 @@ def next_random_weighing(adj_list, node_team, node):
   returns: A tuple containing a boolean of whether or not te node's color
            changed, and the node's current/new color.
   """
+  random.seed(SEED)
+
   # Get the neighbors and the colors of those neighbors.
   neighbors = adj_list[node]
   colored_neighbors = filter(None, [node_team[x] for x in neighbors])

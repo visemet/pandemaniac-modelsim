@@ -37,7 +37,7 @@ def init_conflict(team_nodes, node_team):
   return diff
 
 
-def next_majority_all(adj_list, node_team):
+def next_majority_all(adj_list, node_team, node):
   """
   Function: next_majority_all
   ---------------------------
@@ -46,26 +46,23 @@ def next_majority_all(adj_list, node_team):
 
   adj_list: The adjacency list.
   node_team: Mapping of nodes to their team.
-  returns: A diff.
+  node: The node to compute the next color for.
+  returns: A tuple containing a boolean of whether or not the node's color
+           changed, and the node's current/new color.
   """
-  diff = {}
-  node_team_copy = deepcopy(node_team)
-  for node in adj_list:
-    # Get the neighbors and find the team that covers the most neighbors.
-    neighbors = adj_list[node]
-    team_count = Counter([node_team[x] for x in neighbors])
-    most_common = team_count.most_common(1)[0]
+  # Get the neighbors and find the team that covers the most neighbors.
+  neighbors = adj_list[node]
+  team_count = Counter([node_team[x] for x in neighbors])
+  most_common = team_count.most_common(1)[0]
 
-    # Convert if there is a majority team.
-    if most_common[0] is not None and most_common[1] >= len(neighbors) / 2.0:
-      new_color = most_common[0]
-      diff[node] = new_color
-      node_team_copy[node] = new_color
+  # Convert if there is a majority team.
+  if most_common[0] is not None and most_common[1] >= len(neighbors) / 2.0:
+    return (True, most_common[0])
 
-  return (node_team_copy, diff)
+  return (False, node_team[node])
 
 
-def next_majority_colored(adj_list, node_team):
+def next_majority_colored(adj_list, node_team, node):
   """
   Function: next_majority_colored
   -------------------------------
@@ -73,21 +70,18 @@ def next_majority_colored(adj_list, node_team):
   the majority of its colored neighbors have.
 
   adj_list: The adjacency list.
-  node_team: Mappin of nodes to their team.
-  returns: A tuple containing the new nodes-to-team mapping and the diff.
+  node_team: Mapping of nodes to their team.
+  node: The node to compute the next color for.
+  returns: A tuple containing a boolean of whether or not the node's color
+           changed, and the node's current/new color.
   """
-  diff = {}
-  node_team_copy = deepcopy(node_team)
-  for node in adj_list:
-    # Get the neighbors and find the color that covers most neighbors.
-    neighbors = adj_list[node]
-    colored_neighbors = filter(None, [node_team[x] for x in neighbors])
-    team_count = Counter(colored_neighbors)
+  # Get the neighbors and find the color that covers most neighbors.
+  neighbors = adj_list[node]
+  colored_neighbors = filter(None, [node_team[x] for x in neighbors])
+  team_count = Counter(colored_neighbors)
 
-    most_common = team_count.most_common(1)
-    if len(most_common) > 0 and most_common[0][1] >= len(colored_neighbors) / 2.0:
-      new_color = most_common[0][0]
-      diff[node] = new_color
-      node_team_copy[node] = new_color
+  most_common = team_count.most_common(1)
+  if len(most_common) > 0 and most_common[0][1] >= len(colored_neighbors) / 2.0:
+    return (True, most_common[0][0])
 
-  return (node_team_copy, diff)
+  return (False, node_team[node])

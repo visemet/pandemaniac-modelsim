@@ -6,6 +6,7 @@ simulation.
 """
 
 from collections import Counter, OrderedDict
+from copy import deepcopy
 import models
 
 # Maximum number of rounds to run the simulation.
@@ -39,9 +40,18 @@ def run(team_nodes, adj_list):
 
   # Keep calculating the epidemic until it stops changing.
   while not is_stable(generation, output):
-    print str(generation)
-    # Get the next generation of nodes. The model can be changed.
-    (node_team, diff) = models.next_majority_all(adj_list, node_team)
+    print "Generation:", str(generation)
+    diff = {}
+    node_team_copy = deepcopy(node_team)
+    # Find the new color for every node. The model can be changed.
+    for node in adj_list:
+      (changed, color) = models.next_majority_all(adj_list, node_team, node)
+      # Store the node's new color only if it changed.
+      if changed:
+        diff[node] = color
+        node_team_copy[node] = color
+    node_team = node_team_copy
+
     # Convert the mapping of a node to the team into teams and their nodes.
     output[str(generation)] = to_team_mapping(diff)
     generation += 1

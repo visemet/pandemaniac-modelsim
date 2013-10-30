@@ -39,8 +39,9 @@ def run(team_nodes, adj_list):
 
   # Keep calculating the epidemic until it stops changing.
   while not is_stable(generation, output):
+    print str(generation)
     # Get the next generation of nodes. The model can be changed.
-    diff = models.next_uncolored(adj_list, node_team)
+    (node_team, diff) = models.next_majority_all(adj_list, node_team)
     # Convert the mapping of a node to the team into teams and their nodes.
     output[str(generation)] = to_team_mapping(diff)
     generation += 1

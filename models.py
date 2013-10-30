@@ -37,11 +37,11 @@ def init_conflict(team_nodes, node_team):
   return diff
 
 
-def next_uncolored(adj_list, node_team):
+def next_majority_all(adj_list, node_team):
   """
-  Function: next_uncolored
-  ------------------------
-  Computes the next color for each node. Each node takes on the color the
+  Function: next_majority_all
+  ---------------------------
+  Computes the next color for each node. The node takes on the color the
   majority of its neighbors have (including uncolored nodes).
 
   adj_list: The adjacency list.
@@ -49,6 +49,7 @@ def next_uncolored(adj_list, node_team):
   returns: A diff.
   """
   diff = {}
+  node_team_copy = deepcopy(node_team)
   for node in adj_list:
     # Get the neighbors and find the team that covers the most neighbors.
     neighbors = adj_list[node]
@@ -56,7 +57,37 @@ def next_uncolored(adj_list, node_team):
     most_common = team_count.most_common(1)[0]
 
     # Convert if there is a majority team.
-    if most_common[0] is not None and most_common[1] >= len(neighbors) / 2:
-      diff[node] = most_common[0]
+    if most_common[0] is not None and most_common[1] >= len(neighbors) / 2.0:
+      new_color = most_common[0]
+      diff[node] = new_color
+      node_team_copy[node] = new_color
 
-  return diff
+  return (node_team_copy, diff)
+
+
+def next_majority_colored(adj_list, node_team):
+  """
+  Function: next_majority_colored
+  -------------------------------
+  Computes the next color for each node. The node takes on the color that
+  the majority of its colored neighbors have.
+
+  adj_list: The adjacency list.
+  node_team: Mappin of nodes to their team.
+  returns: A tuple containing the new nodes-to-team mapping and the diff.
+  """
+  diff = {}
+  node_team_copy = deepcopy(node_team)
+  for node in adj_list:
+    # Get the neighbors and find the color that covers most neighbors.
+    neighbors = adj_list[node]
+    colored_neighbors = filter(None, [node_team[x] for x in neighbors])
+    team_count = Counter(colored_neighbors)
+
+    most_common = team_count.most_common(1)
+    if len(most_common) > 0 and most_common[0][1] >= len(colored_neighbors) / 2.0:
+      new_color = most_common[0][0]
+      diff[node] = new_color
+      node_team_copy[node] = new_color
+
+  return (node_team_copy, diff)

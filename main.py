@@ -9,7 +9,7 @@ import argparse
 import json
 import os
 from pymongo import MongoClient
-import simulation
+from simulation import Simulation
 import time
 
 # Location of files.
@@ -121,7 +121,13 @@ if __name__ == "__main__":
   team_nodes = read_nodes(graph, adj_list.keys(), teams)
 
   # Run the simulation and output the run to file.
-  (output, results) = simulation.run(team_nodes, adj_list)
+  
+  # TODO
+  max_rounds = 100
+  model = "weighted_random"
+  
+  simulation = Simulation(max_rounds, model, team_nodes, adj_list)
+  (output, results) = simulation.run()
   output_filename = graph + "-" + str(time.time()) + ".txt"
   output_file = open(OUTPUT_FOLDER + output_filename, "w")
   output_file.write(str(json.dumps(output)))

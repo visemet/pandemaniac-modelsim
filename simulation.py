@@ -1,68 +1,75 @@
-"""
-Class: simulation.py
---------------------
-Contains functions involving the simulation and the generations in the
-simulation.
-"""
-
 from collections import Counter, OrderedDict
 from copy import deepcopy
 import initialize
 from models.weighted_random import WeightedRandom
 
-# Maximum number of rounds to run the simulation.
-MAX_ROUNDS = 100
-
-def run(team_nodes, adj_list):
+class Simulation:
   """
-  Function: run
-  -------------
-  Runs the epidemic simulation for each round of the epidemic until there is
-  no more spread (i.e. it is stable) or we reach the maximum number of rounds.
-
-  team_nodes: The dictionary containing a mapping of a team name and the nodes
-              they chose.
-  adj_list: The adjacency list representation of the graph.
-
-  returns: A tuple (output, results) where the output is a dictionary object
-           containing a mapping of each generation to the diffs generated and
-           the results is the final mapping of teams to their nodes.
+  Class: Simulation
+  -----------------
+  TODO
   """
 
-  # Stores a mapping of nodes to their team.
-  node_team = dict([(node, None) for node in adj_list])
-  # Output to be written to file.
-  output = OrderedDict()
+  def __init__(self, max_rounds, model, team_nodes, adj_list):
+    # The maximum number of rounds to run the simulation.
+    self.max_rounds = max_rounds
+    # A mapping of the teams and the nodes they chose.
+    self.team_nodes = team_nodes
+    # The adjacency list of the graph.
+    self.adj_list = adj_list
 
-  # Choose the initial generation of nodes. The model can be changed.
-  diff = initialize.init_conflict(team_nodes, node_team) # TODO change this
-  # TODO
-  model = WeightedRandom(adj_list)
-  output["0"] = to_team_mapping(diff)
-  generation = 1
-
-  # Keep calculating the epidemic until it stops changing.
-  while not is_stable(generation, output):
-    print "Generation:", str(generation)
-    diff = {}
-    node_team_copy = deepcopy(node_team)
-    # Find the new color for every node. The model can be changed.
-    for node in adj_list:
-      (changed, color) = model.update(node_team, node)
-      # Store the node's new color only if it changed.
-      if changed:
-        diff[node] = color
-        node_team_copy[node] = color
-    node_team = node_team_copy
-
-    # Convert the mapping of a node to the team into teams and their nodes.
-    output[str(generation)] = to_team_mapping(diff)
-    generation += 1
-
-  return (output, to_team_mapping(node_team))
+    # Import the correct module for the model.
+    if model == "weighted_random":
+      from models.weighted_random import WeightedRandom
+      self.model = WeightedRandom(self.adj_list)
 
 
-def is_stable(generation, output):
+  def run(self):
+    """
+    Function: run
+    -------------
+    Runs the epidemic simulation for each generation of the epidemic until there
+    is no more change (i.e. it is stable) or we reach the maximum number of
+    generations.
+
+    returns: A tuple (output, results) where the output is a dictionary object
+             containing a mapping of each generation to the diff generated and
+             results is the final mapping of teams to their nodes.
+    """
+    # Stores a mapping of nodes to their team.
+    node_team = dict([(node, None) for node in self.adj_list])
+    # Output to be written to file.
+    output = OrderedDict()
+
+    # Choose the initial colors for the nodes based on the teams' selections.
+    # TODO put this somewhere else
+    diff = initialize.init_conflict(self.team_nodes, node_team) # TODO change this
+    # TODO
+    output["0"] = to_team_mapping(diff)
+    generation = 1
+
+    # Keep calculating the epidemic until it stops changing.
+    while not is_stable(generation, self.max_rounds, output):
+      print "Generation:", str(generation)
+      diff = {}
+      node_team_copy = deepcopy(node_team)
+      # Find the new color for every node. The model can be changed.
+      for node in self.adj_list:
+        (changed, color) = self.model.update(node_team, node)
+        # Store the node's new color only if it changed.
+        if changed:
+          diff[node] = color
+          node_team_copy[node] = color
+      node_team = node_team_copy
+
+      # Convert the mapping of a node to the team into teams and their nodes.
+      output[str(generation)] = to_team_mapping(diff)
+      generation += 1
+
+    return (output, to_team_mapping(node_team))
+
+
+def is_stable(generation, max_rounds, output):
   """
   Function: is_stable
   -------------------
@@ -70,6 +77,7 @@ def is_stable(generation, output):
   generation's node-to-team mappings with the previous generation's.
 
   generation: The current generation.
+  max_rounds: The maximum number of generations to run for.
   output: The list of generations, teams, and their nodes.
   returns: True if the graph is stable, False otherwise.
   """
@@ -78,8 +86,8 @@ def is_stable(generation, output):
   if generation <= 1:
     return False
 
-  # If we have reached the maximum number of rounds, then stop.
-  if generation == MAX_ROUNDS:
+  # If we have reached the maximum number of generations, then stop.
+  if generation == max_rounds:
     return True
 
   current = output[str(generation - 1)]

@@ -1,13 +1,11 @@
 from collections import Counter, OrderedDict
 from copy import deepcopy
-import initialize
-from models.weighted_random import WeightedRandom
 
 class Simulation:
   """
   Class: Simulation
   -----------------
-  TODO
+  Simulates the epidemic using different epidemic models.
   """
 
   def __init__(self, max_rounds, model, team_nodes, adj_list):
@@ -19,7 +17,13 @@ class Simulation:
     self.adj_list = adj_list
 
     # Import the correct module for the model.
-    if model == "weighted_random":
+    if model == "majority_all":
+      from models.majority_all import MajorityAll
+      self.model = MajorityAll(self.adj_list)
+    elif model == "majority_colored":
+      from models.majority_colored import MajorityColored
+      self.model = MajorityColored(self.adj_list)
+    elif model == "weighted_random":
       from models.weighted_random import WeightedRandom
       self.model = WeightedRandom(self.adj_list)
 
@@ -42,9 +46,7 @@ class Simulation:
     output = OrderedDict()
 
     # Choose the initial colors for the nodes based on the teams' selections.
-    # TODO put this somewhere else
-    diff = initialize.init_conflict(self.team_nodes, node_team) # TODO change this
-    # TODO
+    diff = init_conflict(self.team_nodes, node_team)
     output["0"] = to_team_mapping(diff)
     generation = 1
 
@@ -67,6 +69,36 @@ class Simulation:
       generation += 1
 
     return (output, to_team_mapping(node_team))
+
+
+def init_conflict(team_nodes, node_team):
+  """
+  Function: init_conflict
+  -----------------------
+  Initializes nodes for the teams. If two teams choose the same node then no
+  team gets that node.
+
+  team_nodes: A mapping of a team name to the nodes they chose.
+  node_team: Mapping of nodes to their team.
+  returns: An initial diff.
+  """
+  diff = {}
+
+  for (team, nodes) in team_nodes.items():
+    for node in nodes:
+      # More than one team has chosen a node. They cancel out.
+      if node_team[node] is not None:
+        node_team[node] = "__CONFLICT__"
+        diff[node] = "__CONFLICT__"
+      else:
+        node_team[node] = team
+        diff[node] = team
+  # Now set all the conflicts back to None since no team gets those nodes.
+  for (node, team) in node_team.items():
+    if team == "__CONFLICT__":
+      node_team[node] = None
+
+  return diff
 
 
 def is_stable(generation, max_rounds, output):

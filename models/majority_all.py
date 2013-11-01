@@ -1,4 +1,5 @@
 from collections import Counter
+from model import Model
 
 class MajorityAll(Model):
   """
@@ -18,4 +19,4 @@ class MajorityAll(Model):
     if most_common[0] is not None and most_common[1] >= len(neighbors) / 2.0:
       return (True, most_common[0])
 
-    return (False, node_team[node]))
+    return (False, node_team[node])

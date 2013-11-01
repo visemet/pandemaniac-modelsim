@@ -10,6 +10,7 @@ import json
 import os
 from pymongo import MongoClient
 from simulation import Simulation
+import sys
 import time
 
 # Location of files.
@@ -20,6 +21,9 @@ OUTPUT_FOLDER = "private/runs/"
 # MongoDB configuration.
 DB_SERVER = "localhost"
 DB_PORT = 27017
+
+# Maximum number of generations to run the simulation.
+MAX_ROUNDS = 100
 
 # Points for places.
 POINTS = {1:20, 2:15, 3:12, 4:9, 5:7, 6:5, 7:4, 8:3, 9:2, 10:1}
@@ -83,8 +87,8 @@ def read_nodes(graph, valid_nodes, teams):
 
 def update_points(results, db):
   """
-  Function: update_results
-  ------------------------
+  Function: update_points
+  -----------------------
   Update the results of this run.
 
   results: The results of this run. Is a dictionary with the keys as the teams
@@ -111,22 +115,22 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Get the graph and teams.')
   parser.add_argument("--graph")
   parser.add_argument("--teams", nargs='+')
+  parser.add_argument("--model")
   args = parser.parse_args()
-  (graph, teams) = (args.graph, args.teams)
+  (graph, teams, model) = (args.graph, args.teams, args.model)
+
+  # Usage message.
+  if graph is None or teams is None or model is None:
+    print "Usage: main.py --graph [graph name] --teams [list of team names] --model [model name]"
+    sys.exit(0)
 
   # Create the adjacency list for the graph.
   adj_list = create_adj_list(graph)
-
   # Read in the node selection for each team.
   team_nodes = read_nodes(graph, adj_list.keys(), teams)
 
   # Run the simulation and output the run to file.
-  
-  # TODO
-  max_rounds = 100
-  model = "weighted_random"
-  
-  simulation = Simulation(max_rounds, model, team_nodes, adj_list)
+  simulation = Simulation(MAX_ROUNDS, model, team_nodes, adj_list)
   (output, results) = simulation.run()
   output_filename = graph + "-" + str(time.time()) + ".txt"
   output_file = open(OUTPUT_FOLDER + output_filename, "w")

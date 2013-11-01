@@ -1,4 +1,5 @@
 from collections import Counter
+from model import Model
 
 class MajorityColored(Model):
   """

@@ -23,6 +23,9 @@ class Simulation:
     elif model == "majority_colored":
       from models.majority_colored import MajorityColored
       self.model = MajorityColored(self.adj_list)
+    elif model == "random_p":
+      from models.random_p import RandomP
+      self.model = RandomP(self.adj_list)
     elif model == "weighted_random":
       from models.weighted_random import WeightedRandom
       self.model = WeightedRandom(self.adj_list)

@@ -7,7 +7,8 @@ simulation.
 
 from collections import Counter, OrderedDict
 from copy import deepcopy
-import models
+import initialize
+from models.weighted_random import WeightedRandom
 
 # Maximum number of rounds to run the simulation.
 MAX_ROUNDS = 100
@@ -34,7 +35,9 @@ def run(team_nodes, adj_list):
   output = OrderedDict()
 
   # Choose the initial generation of nodes. The model can be changed.
-  diff = models.init_conflict(team_nodes, node_team)
+  diff = initialize.init_conflict(team_nodes, node_team) # TODO change this
+  # TODO
+  model = WeightedRandom(adj_list)
   output["0"] = to_team_mapping(diff)
   generation = 1
 
@@ -45,7 +48,7 @@ def run(team_nodes, adj_list):
     node_team_copy = deepcopy(node_team)
     # Find the new color for every node. The model can be changed.
     for node in adj_list:
-      (changed, color) = models.next_random_weighing(adj_list, node_team, node)
+      (changed, color) = model.update(node_team, node)
       # Store the node's new color only if it changed.
       if changed:
         diff[node] = color

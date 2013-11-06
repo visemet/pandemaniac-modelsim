@@ -16,7 +16,7 @@ class MajorityAll(Model):
     most_common = team_count.most_common(1)[0]
 
     # Convert if there is a majority team.
-    if most_common[0] is not None and most_common[1] >= len(neighbors) / 2.0:
+    if most_common[0] is not None and most_common[1] > len(neighbors) / 2.0:
       return (True, most_common[0])
 
     return (False, node_team[node])

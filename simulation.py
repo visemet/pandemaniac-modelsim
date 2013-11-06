@@ -23,6 +23,9 @@ class Simulation:
     elif model == "majority_colored":
       from models.majority_colored import MajorityColored
       self.model = MajorityColored(self.adj_list)
+    elif model == "most_common_colored":
+      from models.most_common_colored import MostCommonColored
+      self.model = MostCommonColored(self.adj_list)
     elif model == "random_p":
       from models.random_p import RandomP
       self.model = RandomP(self.adj_list)
@@ -55,7 +58,8 @@ class Simulation:
 
     # Keep calculating the epidemic until it stops changing.
     while not is_stable(generation, self.max_rounds, output):
-      print "Generation:", str(generation)
+      print ".", 
+      # TODO print "Generation:", str(generation)
       diff = {}
       node_team_copy = deepcopy(node_team)
       # Find the new color for every node. The model can be changed.

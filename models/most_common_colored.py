@@ -1,11 +1,11 @@
 from collections import Counter
 from model import Model
 
-class MajorityColored(Model):
+class MostCommonColored(Model):
   """
-  Class: MajorityColored
-  ----------------------
-  A node takes on the color that the majority of its colored neighbors have.
+  Class: MostCommonColored
+  ------------------------
+  A node takes on the color that is the most common among its neighbors..
   """
 
   def update(self, node_team, node):
@@ -14,8 +14,7 @@ class MajorityColored(Model):
     team_count = Counter(colored_neighbors)
 
     most_common = team_count.most_common(1)
-    if len(most_common) > 0 and \
-      most_common[0][1] > len(colored_neighbors) / 2.0:
+    if len(most_common) > 0:
       return (True, most_common[0][0])
 
     return (False, node_team[node])

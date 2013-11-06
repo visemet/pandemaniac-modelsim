@@ -146,4 +146,3 @@ if __name__ == "__main__":
   # Get the final results of teams to their nodes and update their points in
   # the database.
   update_points(results, db)
-  print str(results)

@@ -29,7 +29,8 @@ class Simulation:
     elif model == "random_p":
       from models.random_p import RandomP
       self.model = RandomP(self.adj_list)
-    elif model == "weighted_random":
+    #elif model == "weighted_random":
+    else:
       from models.weighted_random import WeightedRandom
       self.model = WeightedRandom(self.adj_list)
 

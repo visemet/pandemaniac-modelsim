@@ -18,5 +18,8 @@ Possible models include:
 
 Tools
 -----
+* Python 2.7 (32-bit)
 * [pymongo 2.6.2](http://api.mongodb.org/python/current/installation.html)
 * [MongoDB 2.4.6](http://www.mongodb.org/downloads)
+* [numpy](http://sourceforge.net/projects/numpy/files/NumPy/1.6.1/)
+* [scipy](http://sourceforge.net/projects/scipy/files/scipy/0.13.0/)

@@ -2,15 +2,17 @@ import argparse
 from collections import Counter
 import json
 import operator
+from Queue import Queue
 import random
 
 MAX_DIST = 293879873
 
-def shortest_path(adj_list):
+def floyd_warshall(adj_list):
   """
-  Function: shortest_path
-  -----------------------
-  Finds the shortest path between all nodes.
+  Function: floyd_warshall
+  ------------------------
+  Finds the shortest path between all nodes using the Floyd-Warshall
+  algorithm.
   """
   # Initialize the dictionary of distances.
   init_dict = dict([(node, MAX_DIST) for node in adj_list.keys()])
@@ -25,15 +27,47 @@ def shortest_path(adj_list):
       elif j in adj_list[i]:
         dist[i][j] = 1
 
-  print "here"
   # Update distances.
   for i in nodes:
+    print "."
     for j in nodes:
       for k in nodes:
         new_dist = dist[j][i] + dist[i][k]
         if new_dist < dist[j][k]:
           dist[j][k] = new_dist
   return dist
+
+
+def shortest_path(adj_list):
+  """
+  Function: shortest_path
+  -----------------------
+  Finds the shortest path between all nodes using a breadth-first search
+  from each node.
+  """
+  init_dict = dict([(node, MAX_DIST) for node in adj_list.keys()])
+  dist = dict([(node, init_dict) for node in adj_list.keys()])
+  nodes = dist.keys()
+  # Do the breadth-first search from each node.
+  for node in nodes:
+    queue = Queue()
+    s = set()
+    s.add(node)
+    for neighbor in adj_list[node]:
+      if neighbor not in s:
+        queue.put(neighbor)
+        s.add(neighbor)
+      dist[node][neighbor] = 1
+
+    while not queue.empty():
+      curr = queue.get()
+      curr_dist = dist[node][curr]
+      neighbors = adj_list[curr]
+      for neighbor in neighbors:
+        dist[node][neighbor] = curr_dist + 1
+        if neighbor not in s:
+          queue.put(neighbor)
+          s.add(neighbor)
 
 
 def by_degree(adj_list, num):
@@ -43,7 +77,8 @@ def by_degree(adj_list, num):
   Finds the top num nodes with the highest degree.
   """
   degrees = dict([(k, len(v)) for (k, v) in adj_list.items()])
-  degrees = sorted(degrees.iteritems(), key=operator.itemgetter(1), reverse=True)
+  degrees = sorted(degrees.iteritems(), key=operator.itemgetter(1), \
+    reverse=True)
 
   top_degrees = [x[0] for x in degrees][0:num]
   return top_degrees
@@ -61,7 +96,11 @@ def by_closeness(adj_list, num):
   Where l(i, j) is the length of the shortest path between nodes i and j.
   """
   dist = shortest_path(adj_list)
-  closeness = [sum([l for l in dist[node] if l != MAX_DIST]) for node in dist.keys()]
+  # List of tuples of the form (closeness, node).
+  closeness = [(sum([l for l in dist[node] if l != MAX_DIST]), node) \
+    for node in dist.keys()]
+  closeness = sorted(closeness, key=lambda tup: tup[0])
+  return closeness[0:num]
 
 
 def by_betweenness(adj_list, num):
@@ -71,6 +110,11 @@ def by_betweenness(adj_list, num):
 
 
 def by_random(adj_list, num):
+  """
+  Function: by_random
+  -------------------
+  Selects num random nodes.
+  """
   return random.sample(adj_list.keys(), num)
 
 

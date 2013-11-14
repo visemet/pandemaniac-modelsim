@@ -6,6 +6,11 @@ import operator
 from Queue import Queue
 import random
 
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import floyd_warshall as fw
+from scipy.sparse.csgraph import shortest_path as scipy_shortest_path
+import numpy as np
+
 MAX_DIST = 293879873
 
 def reindex(adj_list):
@@ -23,7 +28,11 @@ def reindex(adj_list):
         node_mappings[neighbor] = i
         i += 1
       new_adj_list[new_node].append(node_mappings[neighbor])
-  return new_adj_list
+
+  # Reverse the node mappings to be able to un-index later.
+  node_mappings = dict([(new, old) for (old, new) in node_mappings.iteritems()])
+  #node_mappings = dict(zip(node_mappings.values(), node_mappings.keys()))
+  return (new_adj_list, node_mappings)
 
 
 def floyd_warshall(adj_list):
@@ -48,7 +57,6 @@ def floyd_warshall(adj_list):
 
   # Update distances.
   for i in nodes:
-    print "."
     for j in nodes:
       for k in nodes:
         new_dist = dist[j][i] + dist[i][k]
@@ -57,52 +65,20 @@ def floyd_warshall(adj_list):
   return dist
 
 
-def shortest_path_node(adj_list, node, dist):
-    """
-    Function: shortest_path_node
-    ----------------------------
-    Finds the shortest path from a given node to all other nodes using
-    breadth-first search.
-    """
-    queue = Queue()
-    s = set()
-    s.add(node)
-    for neighbor in adj_list[node]:
-      if neighbor not in s:
-        queue.put(neighbor)
-        s.add(neighbor)
-      dist[node][neighbor] = 1
-
-    while not queue.empty():
-      curr = queue.get()
-      curr_dist = dist[node][curr]
-      neighbors = adj_list[curr]
-      for neighbor in neighbors:
-        dist[node][neighbor] = curr_dist + 1
-        if neighbor not in s:
-          queue.put(neighbor)
-          s.add(neighbor)
-    print "done"
-
-
 def shortest_path(adj_list):
   """
   Function: shortest_path
   -----------------------
-  Finds the shortest path between all nodes using a breadth-first search
-  from each node.
+  TODO
   """
-  init_dict = dict([(node, MAX_DIST) for node in adj_list.keys()])
-  dist = dict([(node, init_dict) for node in adj_list.keys()])
-  nodes = dist.keys()
-
-  # Do the breadth-first search from each node.
-  for node in nodes:
-    p = Process(target=shortest_path_node, args=(adj_list, node, dist, ))
-    p.start()
-    p.join()
-
-  return dist
+  n = len(adj_list)
+  matrix = np.zeros((n, n), dtype=np.int)
+  for n1 in adj_list.keys():
+    for n2 in adj_list[n1]:
+      matrix[n1][n2] = 1
+  dists = fw(csr_matrix(matrix), directed=False, unweighted=True)
+  print "Asdf"
+  return dists
 
 
 def by_degree(adj_list, num):
@@ -111,9 +87,8 @@ def by_degree(adj_list, num):
   -------------------
   Finds the top num nodes with the highest degree.
   """
-  degrees = dict([(k, len(v)) for (k, v) in adj_list.items()])
-  degrees = sorted(degrees.iteritems(), key=operator.itemgetter(1), \
-    reverse=True)
+  degrees = [(len(v), k) for (k, v) in adj_list.items()]
+  degrees = sorted(degrees, key=lambda tup: tup[0], reverse=True)
 
   top_degrees = [x[0] for x in degrees][0:num]
   return top_degrees
@@ -130,15 +105,23 @@ def by_closeness(adj_list, num):
   Closeness(i) = (n - 1) / Sum_(j != i) l(i, j)
   Where l(i, j) is the length of the shortest path between nodes i and j.
   """
-  dist = shortest_path(adj_list)
+  # Need to re-index the adjacency list.
+  (adj_list, node_mappings) = reindex(adj_list)
+  dist = floyd_warshall(adj_list)
+
   # List of tuples of the form (closeness, node).
   print "closenss"
   closeness = [(sum([l for l in dist[node] if l != MAX_DIST]), node) \
     for node in dist.keys()]
   print "done"
-  closeness = sorted(closeness, key=lambda tup: tup[0])
+  closeness = sorted(closeness, key=lambda tup: tup[0], reverse=True)
   print "super-done"
-  return closeness[0:num]
+
+  return unindex(closeness[0:num], node_mappings)
+
+
+def unindex(lst, node_mappings):
+  return [node_mappings[x] for x in lst]
 
 
 def by_betweenness(adj_list, num):
@@ -155,8 +138,8 @@ def by_betweenness(adj_list, num):
              ((n - 1) choose 2)
   """
   between = []
-  
-  between = sorted(between, key=lambda tup: tup[0])
+  # TODO
+  between = sorted(between, key=lambda tup: tup[0], reverse=True)
   return [x[1] for x in between[0:num]]
 
 
@@ -199,7 +182,7 @@ def by_clustering(adj_list, num):
       clustering = get_triangles(node) / get_triples(node)
     cluster.append((clustering, node))
 
-  cluster = sorted(cluster, key=lambda tup: tup[0])
+  cluster = sorted(cluster, key=lambda tup: tup[0], reverse=True)
   return [x[1] for x in cluster[0:num]]
 
 
@@ -231,7 +214,7 @@ if __name__ == "__main__":
   elif method == "closeness":
     result = by_closeness(adj_list, num)
   elif method == "betweeness" or method == "betweenness":
-    result = by_beteweenness(adj_list, num)
+    result = by_betweenness(adj_list, num)
   elif method == "clustering":
     result = by_clustering(adj_list, num)
   else:#if method == "random":

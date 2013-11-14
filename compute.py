@@ -1,11 +1,30 @@
 import argparse
 from collections import Counter
 import json
+from multiprocessing import Process
 import operator
 from Queue import Queue
 import random
 
 MAX_DIST = 293879873
+
+def reindex(adj_list):
+  new_adj_list = {}
+  node_mappings = {}
+  i = 0
+  for node in adj_list.keys():
+    if node not in node_mappings:
+      node_mappings[node] = i
+      i += 1
+    new_node = node_mappings[node]
+    new_adj_list[new_node] = []
+    for neighbor in adj_list[node]:
+      if neighbor not in node_mappings:
+        node_mappings[neighbor] = i
+        i += 1
+      new_adj_list[new_node].append(node_mappings[neighbor])
+  return new_adj_list
+
 
 def floyd_warshall(adj_list):
   """
@@ -38,18 +57,13 @@ def floyd_warshall(adj_list):
   return dist
 
 
-def shortest_path(adj_list):
-  """
-  Function: shortest_path
-  -----------------------
-  Finds the shortest path between all nodes using a breadth-first search
-  from each node.
-  """
-  init_dict = dict([(node, MAX_DIST) for node in adj_list.keys()])
-  dist = dict([(node, init_dict) for node in adj_list.keys()])
-  nodes = dist.keys()
-  # Do the breadth-first search from each node.
-  for node in nodes:
+def shortest_path_node(adj_list, node, dist):
+    """
+    Function: shortest_path_node
+    ----------------------------
+    Finds the shortest path from a given node to all other nodes using
+    breadth-first search.
+    """
     queue = Queue()
     s = set()
     s.add(node)
@@ -68,6 +82,27 @@ def shortest_path(adj_list):
         if neighbor not in s:
           queue.put(neighbor)
           s.add(neighbor)
+    print "done"
+
+
+def shortest_path(adj_list):
+  """
+  Function: shortest_path
+  -----------------------
+  Finds the shortest path between all nodes using a breadth-first search
+  from each node.
+  """
+  init_dict = dict([(node, MAX_DIST) for node in adj_list.keys()])
+  dist = dict([(node, init_dict) for node in adj_list.keys()])
+  nodes = dist.keys()
+
+  # Do the breadth-first search from each node.
+  for node in nodes:
+    p = Process(target=shortest_path_node, args=(adj_list, node, dist, ))
+    p.start()
+    p.join()
+
+  return dist
 
 
 def by_degree(adj_list, num):
@@ -97,16 +132,75 @@ def by_closeness(adj_list, num):
   """
   dist = shortest_path(adj_list)
   # List of tuples of the form (closeness, node).
+  print "closenss"
   closeness = [(sum([l for l in dist[node] if l != MAX_DIST]), node) \
     for node in dist.keys()]
+  print "done"
   closeness = sorted(closeness, key=lambda tup: tup[0])
+  print "super-done"
   return closeness[0:num]
 
 
 def by_betweenness(adj_list, num):
-  pass
+  """
+  Function: by_betweenness
+  ------------------------
+  Finds the top num nodes with the highest betweenness centrality. We let
+  P(j, k) denote the number of shortest paths between nodes j and k, and
+  P_i (j, k) be the number of those shortest paths that pass through i.
+
+  Betweenness is then:
+    Sum_(j != k != i) P_i (j, k) / P(j, k)
+    --------------------------------------
+             ((n - 1) choose 2)
+  """
+  between = []
   
-  
+  between = sorted(between, key=lambda tup: tup[0])
+  return [x[1] for x in between[0:num]]
+
+
+def by_clustering(adj_list, num):
+  """
+  Function: by_clustering
+  -----------------------
+  Finds the top num nodes with the highest clustering.
+  """
+
+  def get_triangles(node):
+    """
+    Function: get_triangles
+    -----------------------
+    Gets the number of triangles centered at this node.
+    """
+    triangles = 0
+    neighbors = adj_list[node]
+    for n1 in neighbors:
+      for n2 in neighbors:
+        if n2 in adj_list[n1]:
+          triangles += 1
+    return triangles
+
+  def get_triples(node):
+    """
+    Function: get_triples
+    ---------------------
+    Returns the number of triples centered at this node.
+    """
+    degree = len(adj_list[node])
+    return degree * (degree - 1) / 2
+
+
+  cluster = []
+  for node in adj_list.keys():
+    clustering = 0
+    # Clustering defined to be 0 if there were no triples.
+    if get_triples(node) != 0:
+      clustering = get_triangles(node) / get_triples(node)
+    cluster.append((clustering, node))
+
+  cluster = sorted(cluster, key=lambda tup: tup[0])
+  return [x[1] for x in cluster[0:num]]
 
 
 def by_random(adj_list, num):
@@ -135,9 +229,11 @@ if __name__ == "__main__":
   if method == "degree":
     result = by_degrees(adj_list, num)
   elif method == "closeness":
-    result = by_centrality(adj_list, num)
+    result = by_closeness(adj_list, num)
   elif method == "betweeness" or method == "betweenness":
     result = by_beteweenness(adj_list, num)
+  elif method == "clustering":
+    result = by_clustering(adj_list, num)
   else:#if method == "random":
     result = by_random(adj_list, num)
 

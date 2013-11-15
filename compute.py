@@ -77,8 +77,7 @@ def shortest_path(adj_list):
     for n2 in adj_list[n1]:
       matrix[n1][n2] = 1
   dists = fw(csr_matrix(matrix), directed=False, unweighted=True)
-  print "Asdf"
-  return dists
+  return dists.tolist()
 
 
 def by_degree(adj_list, num):
@@ -90,7 +89,7 @@ def by_degree(adj_list, num):
   degrees = [(len(v), k) for (k, v) in adj_list.items()]
   degrees = sorted(degrees, key=lambda tup: tup[0], reverse=True)
 
-  top_degrees = [x[0] for x in degrees][0:num]
+  top_degrees = [x[1] for x in degrees[0:num]]
   return top_degrees
 
 
@@ -107,17 +106,15 @@ def by_closeness(adj_list, num):
   """
   # Need to re-index the adjacency list.
   (adj_list, node_mappings) = reindex(adj_list)
-  dist = floyd_warshall(adj_list)
+  dist = shortest_path(adj_list)
 
   # List of tuples of the form (closeness, node).
-  print "closenss"
-  closeness = [(sum([l for l in dist[node] if l != MAX_DIST]), node) \
-    for node in dist.keys()]
-  print "done"
+  closeness = [(sum([l for l in dist[node] if l < MAX_DIST]), node) \
+    for node in range(len(dist))]
   closeness = sorted(closeness, key=lambda tup: tup[0], reverse=True)
-  print "super-done"
 
-  return unindex(closeness[0:num], node_mappings)
+
+  return unindex([x[1] for x in closeness[0:num]], node_mappings)
 
 
 def unindex(lst, node_mappings):
@@ -158,9 +155,10 @@ def by_clustering(adj_list, num):
     """
     triangles = 0
     neighbors = adj_list[node]
-    for n1 in neighbors:
-      for n2 in neighbors:
-        if n2 in adj_list[n1]:
+    for i in xrange(len(neighbors)):
+      for j in xrange(i + 1, len(neighbors)):
+        if neighbors[i] != neighbors[j] and \
+          neighbors[j] in adj_list[neighbors[i]]:
           triangles += 1
     return triangles
 
@@ -171,7 +169,7 @@ def by_clustering(adj_list, num):
     Returns the number of triples centered at this node.
     """
     degree = len(adj_list[node])
-    return degree * (degree - 1) / 2
+    return degree * (degree - 1) / 2.0
 
 
   cluster = []
@@ -183,6 +181,7 @@ def by_clustering(adj_list, num):
     cluster.append((clustering, node))
 
   cluster = sorted(cluster, key=lambda tup: tup[0], reverse=True)
+  print cluster[0], cluster[-1]
   return [x[1] for x in cluster[0:num]]
 
 
@@ -210,7 +209,7 @@ if __name__ == "__main__":
 
   result = []
   if method == "degree":
-    result = by_degrees(adj_list, num)
+    result = by_degree(adj_list, num)
   elif method == "closeness":
     result = by_closeness(adj_list, num)
   elif method == "betweeness" or method == "betweenness":

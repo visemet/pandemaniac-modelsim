@@ -17,9 +17,9 @@ class WeightedRandom(Model):
   2/5.
   """
 
-  def update(self, node_team, node):
+  def update(self, node_color, node):
     neighbors = self.adj_list[node]
-    colored_neighbors = filter(None, [node_team[x] for x in neighbors])
+    colored_neighbors = filter(None, [node_color[x] for x in neighbors])
     team_count = Counter(colored_neighbors)
 
     if len(team_count) > 0:
@@ -27,4 +27,4 @@ class WeightedRandom(Model):
         [[x[0]] * int(x[1]) for x in team_count.items()])
       return (True, random.choice(probs))
 
-    return (False, node_team[node])
+    return (False, node_color[node])

@@ -14,12 +14,12 @@ class RandomP(Model):
   than one neighbor "infects" the node, then the node does not change its color.
   """
 
-  def update(self, node_team, node):
+  def update(self, node_color, node):
     # Get the neighbors and their colors.
     neighbors = self.adj_list[node]
-    neighbor_colors = filter(None, [node_team[x] for x in neighbors])
+    neighbor_colors = filter(None, [node_color[x] for x in neighbors])
 
-    (color_changed, current, original) = (False, None, node_team[node])
+    (color_changed, current, original) = (False, None, node_color[node])
     # Go through each color.
     for color in neighbor_colors:
       should_infect = random.random() <= P

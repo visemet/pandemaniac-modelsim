@@ -65,14 +65,8 @@ def by_betweenness(adj_list, num):
   """
   # Need to re-index the adjacency list.
   (adj_list, node_mappings) = reindex(adj_list)
-  print "done"
-  #(dist, pred) = shortest_path(adj_list)
   (dist, pred) = floyd_warshall(adj_list)
-  print "supdeond"
 
-
-  print str(pred[0][0:40])
-  """
   # Predecessors is structured as an N x N matrix. The ith row represents
   # shortest paths from point i. Each entry (i, j) represents the index
   # of the previous node in the shortest path from i to j.
@@ -82,17 +76,13 @@ def by_betweenness(adj_list, num):
   P_jk = [[0] * len(adj_list)] * len(adj_list)
   # Array to store the number of shortest paths that pass through i.
   P_i = [0] * len(adj_list)
-  for j in xrange(len(adj_list)):
-    for k in xrange(len(adj_list)):
 
-      print str(pred[0])
-  # 
-  """
-  
   between = []
-  # TODO
+  # TODO: This does not work, because it is too slow in Python. Please refer
+  # to the Java version.
   between = sorted(between, key=lambda tup: tup[0], reverse=True)
   return unindex([x[1] for x in between[0:num]], node_mappings)
+  pass
 
 
 def by_clustering(adj_list, num):
@@ -150,6 +140,17 @@ def by_random(adj_list, num):
 # ------------------------------- Helper Methods ------------------------------
 
 def reindex(adj_list):
+  """
+  Function: reindex
+  -----------------
+  Re-indexes a graph's nodes so they are numbered from 0 to (N - 1) where
+  N is the number of nodes.
+
+  returns: A tuple (new_adj_list, node_mappings) where new_adj_list is the
+           new adjacency list with the new node mappings, and node_mappings
+           is a map that can convert the new numbering back to the old
+           numbering.
+  """
   new_adj_list = {}
   node_mappings = {}
   i = 0
@@ -167,11 +168,20 @@ def reindex(adj_list):
 
   # Reverse the node mappings to be able to un-index later.
   node_mappings = dict([(new, old) for (old, new) in node_mappings.iteritems()])
-  #node_mappings = dict(zip(node_mappings.values(), node_mappings.keys()))
   return (new_adj_list, node_mappings)
 
 
 def unindex(lst, node_mappings):
+  """
+  Function: unindex
+  -----------------
+  Maps the new node mappings back to the old one.
+
+  lst: The list to remap.
+  node_mappings: The node mappings.
+
+  returns: The list with the new mappings.
+  """
   return [node_mappings[x] for x in lst]
 
 
@@ -180,7 +190,7 @@ def floyd_warshall(adj_list):
   Function: floyd_warshall
   ------------------------
   Finds the shortest path between all nodes using the Floyd-Warshall
-  algorithm. This is very slow.
+  algorithm. WARNING! This is very slow.
   """
   N = len(adj_list)
 
@@ -193,7 +203,6 @@ def floyd_warshall(adj_list):
     for j in adj_list[i]:
         dist[i][j] = 1
 
-  print "aaa"
   # Update distances.
   for i in xrange(N):
     for j in xrange(N):

@@ -1,5 +1,6 @@
 from collections import Counter, OrderedDict
 from copy import deepcopy
+from random import shuffle
 
 class Simulation:
   """
@@ -56,37 +57,41 @@ class Simulation:
     output = OrderedDict()
 
     # Choose the initial colors for the nodes.
-    diff = init_conflict(self.color_nodes, node_color)
+    diff = init(self.color_nodes, node_color)
     output["0"] = to_color_mapping(diff)
     generation = 1
 
     # Keep calculating the epidemic until it stops changing.
+    nodes = self.adj_list.keys()
     while not is_stable(generation, self.max_rounds, output):
       print ".", 
-      # TODO print "Generation:", str(generation)
       diff = {}
-      node_color_copy = deepcopy(node_color)
+      #node_color_copy = deepcopy(node_color)
       # Find the new color for every node. The model can be changed.
-      for node in self.adj_list:
+      #for node in self.adj_list:
+      shuffle(nodes)
+      for node in nodes:
         (changed, color) = self.model.update(node_color, node)
         # Store the node's new color only if it changed.
         if changed:
           diff[node] = color
-          node_color_copy[node] = color
-      node_color = node_color_copy
+          node_color[node] = color
+          #node_color_copy[node] = color
+      #node_color = node_color_copy
 
       # Convert the mapping of a node to its color into colors and coresponding
       # nodes.
       output[str(generation)] = to_color_mapping(diff)
       generation += 1
 
+    print "\nTotal:", generation, "generations."
     return (output, to_color_mapping(node_color))
 
 
-def init_conflict(color_nodes, node_color):
+def init(color_nodes, node_color):
   """
-  Function: init_conflict
-  -----------------------
+  Function: init
+  --------------
   Initializes nodes for each color. If more than one color is selected for a
   node, then that node does not any of the colors.
 

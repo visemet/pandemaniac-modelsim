@@ -23,3 +23,4 @@ Tools
 * [MongoDB 2.4.6](http://www.mongodb.org/downloads)
 * [numpy](http://sourceforge.net/projects/numpy/files/NumPy/1.6.1/)
 * [scipy](http://sourceforge.net/projects/scipy/files/scipy/0.13.0/)
+* [NetworkX](http://networkx.github.io/index.html)

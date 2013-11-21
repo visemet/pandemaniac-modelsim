@@ -1,6 +1,7 @@
 import argparse
 import json
 import networkx as nx
+import random
 
 def by_clustering(adj_list, num):
   """
@@ -88,9 +89,9 @@ def get_top_N(adj_list, method, num):
   elif method == "betweeness" or method == "betweenness":
     results = nx.betweenness_centrality(G)
   elif method == "clustering":
-    return by_cluster(adj_list)
+    return by_cluster(adj_list, num)
   elif method == "random":
-    return by_random(adj_list)
+    return by_random(adj_list, num)
 
   # Get the top N.
   results = sorted(results.items(), key=lambda x: x[1], reverse=True)
@@ -111,11 +112,8 @@ if __name__ == "__main__":
   graph_file.close()
 
   nodes = get_top_N(adj_list, method, num)
-
-  """
-  output = open("nodes.txt", "w")
-  for elem in result:
-    output.write(str(elem) + "\n")
+  output = open(graph + "-" + method + "-" + str(num) + ".txt", "w")
+  for node in nodes:
+    output.write(str(node) + "\n")
   output.close()
-  """
   

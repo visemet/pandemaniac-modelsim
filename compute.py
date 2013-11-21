@@ -18,9 +18,9 @@ def by_clustering(adj_list, num):
     """
     triangles = 0
     neighbors = adj_list[node]
-    for n1 in neighbors:
-      for n2 in neighbors:
-        if n2 in adj_list[n1]:
+    for i in xrange(len(neighbors)):
+      for j in xrange(i + 1, len(neighbors)):
+        if neighbors[j] in adj_list[str(neighbors[i])]:
           triangles += 1
     return triangles
 
@@ -31,7 +31,7 @@ def by_clustering(adj_list, num):
     Returns the number of triples centered at this node.
     """
     degree = len(adj_list[node])
-    return degree * (degree - 1) / 2
+    return degree * (degree - 1) / 2.0
 
 
   cluster = []
@@ -42,7 +42,7 @@ def by_clustering(adj_list, num):
       clustering = get_triangles(node) / get_triples(node)
     cluster.append((clustering, node))
 
-  cluster = sorted(cluster, key=lambda tup: tup[0], reverse=True)
+  cluster = sorted(list(set(cluster)), key=lambda tup: tup[0], reverse=True)
   return [x[1] for x in cluster[0:num]]
 
 
@@ -65,8 +65,8 @@ def create_graph(adj_list):
   # Loop through the adjacency list to add edges.
   for (n1, neighbors) in adj_list.items():
     for n2 in neighbors:
-      G.add_edge(n1, n2)
-      G.add_edge(n2, n1)
+      G.add_edge(str(n1), str(n2))
+      G.add_edge(str(n2), str(n1))
   return G
 
 
@@ -89,12 +89,12 @@ def get_top_N(adj_list, method, num):
   elif method == "betweeness" or method == "betweenness":
     results = nx.betweenness_centrality(G)
   elif method == "clustering":
-    return by_cluster(adj_list, num)
+    return by_clustering(adj_list, num)
   elif method == "random":
     return by_random(adj_list, num)
 
   # Get the top N.
-  results = sorted(results.items(), key=lambda x: x[1], reverse=True)
+  results = sorted(list(set(results.items())), key=lambda x: x[1], reverse=True)
   return [x[0] for x in results[0:num]]
 
 

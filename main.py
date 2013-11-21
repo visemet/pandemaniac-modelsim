@@ -40,6 +40,9 @@ def create_adj_list(graph):
   """
   graph_file = open(GRAPH_FOLDER + graph + ".txt", "r")
   adj_list = json.loads("".join(graph_file.readlines()))
+  # Convert the values to strings.
+  for key in adj_list.keys():
+    adj_list[key] = [str(x) for x in adj_list[key]]
   graph_file.close()
   return adj_list
 

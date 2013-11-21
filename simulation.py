@@ -64,11 +64,10 @@ class Simulation:
     # Keep calculating the epidemic until it stops changing.
     nodes = self.adj_list.keys()
     while not is_stable(generation, self.max_rounds, output):
-      print ".", 
+      print ".",
       diff = {}
-      #node_color_copy = deepcopy(node_color)
-      # Find the new color for every node. The model can be changed.
-      #for node in self.adj_list:
+      # Randomly shuffle the nodes to iterate through in order to generate
+      # the next color.
       shuffle(nodes)
       for node in nodes:
         (changed, color) = self.model.update(node_color, node)
@@ -76,11 +75,9 @@ class Simulation:
         if changed:
           diff[node] = color
           node_color[node] = color
-          #node_color_copy[node] = color
-      #node_color = node_color_copy
 
-      # Convert the mapping of a node to its color into colors and coresponding
-      # nodes.
+      # Convert the mapping of a node to its color into colors and
+      # corresponding nodes.
       output[str(generation)] = to_color_mapping(diff)
       generation += 1
 

@@ -28,7 +28,7 @@ MAX_ROUNDS = 100
 # Points for places.
 POINTS = {1:20, 2:15, 3:12, 4:9, 5:7, 6:5, 7:4, 8:3, 9:2, 10:1}
 
-def create_adj_list(graph):  
+def create_adj_list(graph):
   """
   Function: create_adj_list
   -------------------------
@@ -121,7 +121,8 @@ if __name__ == "__main__":
 
   # Usage message.
   if graph is None or teams is None or model is None:
-    print "Usage: main.py --graph [graph name] --teams [list of team names] --model [model name]"
+    print "Usage: main.py --graph [graph name] --teams " + \
+      "[list of team names] --model [model name]"
     sys.exit(0)
 
   # Create the adjacency list for the graph.

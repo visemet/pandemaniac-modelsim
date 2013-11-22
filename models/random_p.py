@@ -33,7 +33,7 @@ class RandomP(Model):
         color_changed = True
 
     # If the current color never changed, then this node did not change color.
-    if current == original:
+    if current == original or current is None:
       return (False, current)
     else:
       return (True, current)

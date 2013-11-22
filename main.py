@@ -38,7 +38,7 @@ def create_adj_list(graph):
   graph: The graph to create an adjacency list for.
   returns: An adjacency list.
   """
-  graph_file = open(GRAPH_FOLDER + graph + ".txt", "r")
+  graph_file = open(GRAPH_FOLDER + graph, "r")
   adj_list = json.loads("".join(graph_file.readlines()))
   # Convert the values to strings.
   for key in adj_list.keys():
@@ -101,7 +101,6 @@ def update_points(results, db):
   """
 
   # Put the teams in order of number of nodes they have, sorted most to least.
-  del results[None]
   ranked_teams = sorted(results, key=lambda k: len(results[k]), reverse=True)
 
   # Olympic scoring. Add the score to the database.

@@ -1,6 +1,7 @@
 import argparse
 import json
 import networkx as nx
+import os
 import random
 
 def by_clustering(adj_list, num):
@@ -90,12 +91,27 @@ def get_top_N(adj_list, method, num):
     results = nx.betweenness_centrality(G)
   elif method == "clustering":
     return by_clustering(adj_list, num)
-  elif method == "random":
+  elif method.startswith("random"):
     return by_random(adj_list, num)
 
   # Get the top N.
   results = sorted(list(set(results.items())), key=lambda x: x[1], reverse=True)
   return [x[0] for x in results[0:num]]
+
+
+def main(graph, num, method):
+  graph_file = open("private/graphs/" + graph, "r")
+  adj_list = json.loads("".join(graph_file.readlines()))
+  graph_file.close()
+
+  nodes = get_top_N(adj_list, method, num)
+  path = "private/uploads/" + method
+  if not os.path.exists(path):
+    os.makedirs(path)
+  output = open(path + "/" + graph + "-" + str(num), "w")
+  for node in nodes:
+    output.write(str(node) + "\n")
+  output.close()
 
 
 if __name__ == "__main__":
@@ -106,14 +122,4 @@ if __name__ == "__main__":
   parser.add_argument("--method")
   args = parser.parse_args()
   (graph, num, method) = (args.graph, int(args.num), args.method)
-
-  graph_file = open("private/graphs/" + graph + ".txt", "r")
-  adj_list = json.loads("".join(graph_file.readlines()))
-  graph_file.close()
-
-  nodes = get_top_N(adj_list, method, num)
-  output = open(graph + "-" + method + "-" + str(num) + ".txt", "w")
-  for node in nodes:
-    output.write(str(node) + "\n")
-  output.close()
-  
+  main(graph, num, method)

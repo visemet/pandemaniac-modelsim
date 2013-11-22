@@ -82,7 +82,7 @@ class Simulation:
       generation += 1
 
     print "\nTotal:", generation, "generations."
-    return (output, to_color_mapping(node_color))
+    return (output, final_color_mapping(self.color_nodes.keys(), node_color))
 
 
 def init(color_nodes, node_color):
@@ -168,4 +168,21 @@ def to_color_mapping(diff):
       color_nodes[color].append(node)
     else:
       color_nodes[color] = [node]
+  return color_nodes
+
+
+def final_color_mapping(colors, node_color):
+  """
+  Function: final_color_mapping
+  -----------------------------
+  TODO
+  """
+  color_nodes = {}
+  for color in colors:
+    color_nodes[color] = []
+
+  for node, color in node_color.items():
+    if color is not None:
+      color_nodes[color].append(node)
+
   return color_nodes

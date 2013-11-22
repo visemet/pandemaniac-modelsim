@@ -108,17 +108,26 @@ def update_points(f, results):
            each team gets by the number of nodes they have.
   db: The client for the MongoDB connection.
   """
-
   # Put the teams in order of number of nodes they have, sorted most to least.
-  ranked_teams = sorted(results, key=lambda k: len(results[k]), reverse=True)
+  # Result is a list of tuples (team, number of nodes).
+  ranked_teams = [(x[0], len(x[1])) for x in results.items()]
+  ranked_teams = sorted(ranked_teams, key=lambda k: k[1], reverse=True)
 
-  # Olympic scoring. Add the score to the database.
-  for i in range(1, len(ranked_teams) + 1):
-    if ranked_teams[i - 1] not in RANKS:
-      RANKS[ranked_teams[i - 1]] = 0
-    f.write("(" + ranked_teams[i - 1] + ", " + str(POINTS[i]) + ")\t")
-    RANKS[ranked_teams[i - 1]] += POINTS[i]
+  # Olympic scoring.
+  rank = 1
+  for i in range(len(ranked_teams)):
+    points = 0
+    if ranked_teams[i][0] not in RANKS:
+      RANKS[ranked_teams[i][0]] = 0
+
+    # If they have the same number of nodes as the previous rank, they are
+    # tied.
+    if not (i > 0 and ranked_teams[i][1] == ranked_teams[i - 1][1]):
+      rank = i + 1
+    f.write("(" + ranked_teams[i][0] + ", " + str(POINTS[rank]) + ")\t")
+    RANKS[ranked_teams[i][0]] += POINTS[rank]
   f.write("\n")
+
 
 if __name__ == "__main__":
   # Parse the command-line arguments.

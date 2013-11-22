@@ -4,6 +4,52 @@ import networkx as nx
 import os
 import random
 
+def create_graph(adj_list):
+  """
+  Function: create_graph
+  ----------------------
+  Creates a NetworkX graph from an adjacency list.
+  """
+  G = nx.Graph()
+  # Loop through the adjacency list to add edges.
+  for (n1, neighbors) in adj_list.items():
+    for n2 in neighbors:
+      G.add_edge(str(n1), str(n2))
+      G.add_edge(str(n2), str(n1))
+  return G
+
+
+def randomize(lst1, lst2):
+  """
+  Function: randomize
+  -------------------
+  Combines two lists and shuffles them as if we were randomly picking nodes
+  from each one of them.
+  """
+  result = lst1 + lst2
+  random.shuffle(result)
+  return result
+
+
+def sort(nodes):
+  """
+  Function: sort
+  --------------
+  Sorts a list of nodes by the second element in the tuple.
+  """
+  nodes = sorted(list(set(nodes.items())), key=lambda x: x[1], reverse=True)
+  return [x[0] for x in nodes]
+
+
+def subset(adj_list, nodes):
+  """
+  Function: subset
+  ----------------
+  Gets a subset of an adjacency list with particular nodes.
+  """
+  return dict([x for x in adj_list.items() if x[0] in nodes])
+
+
 def by_clustering(adj_list, num):
   """
   Function: by_clustering
@@ -35,16 +81,15 @@ def by_clustering(adj_list, num):
     return degree * (degree - 1) / 2.0
 
 
-  cluster = []
+  cluster = {}
   for node in adj_list.keys():
     clustering = 0
     # Clustering defined to be 0 if there were no triples.
     if get_triples(node) != 0:
       clustering = get_triangles(node) / get_triples(node)
-    cluster.append((clustering, node))
+    cluster[node] = clustering
 
-  cluster = sorted(list(set(cluster)), key=lambda tup: tup[0], reverse=True)
-  return [x[1] for x in cluster[0:num]]
+  return cluster
 
 
 def by_random(adj_list, num):
@@ -54,21 +99,6 @@ def by_random(adj_list, num):
   Selects num random nodes.
   """
   return random.sample(adj_list.keys(), num)
-
-
-def create_graph(adj_list):
-  """
-  Function: create_graph
-  ----------------------
-  Creates a NetworkX graph from an adjacency list.
-  """
-  G = nx.Graph()
-  # Loop through the adjacency list to add edges.
-  for (n1, neighbors) in adj_list.items():
-    for n2 in neighbors:
-      G.add_edge(str(n1), str(n2))
-      G.add_edge(str(n2), str(n1))
-  return G
 
 
 def get_top_N(adj_list, method, num):
@@ -84,19 +114,26 @@ def get_top_N(adj_list, method, num):
   G = create_graph(adj_list)
   results = {}
   if method == "degree":
-    results = nx.degree_centrality(G)
+    results = sort(nx.degree_centrality(G))
   elif method == "closeness":
-    results = nx.closeness_centrality(G)
+    results = sort(nx.closeness_centrality(G))
   elif method == "betweeness" or method == "betweenness":
-    results = nx.betweenness_centrality(G)
+    results = sort(nx.betweenness_centrality(G))
   elif method == "clustering":
-    return by_clustering(adj_list, num)
+    results = sort(by_clustering(adj_list, num))
+  elif method == "degree-clustering":
+    r1 = sort(nx.degree_centrality(G))
+    r2 = sort(by_clustering(adj_list, num))
+    results = randomize(r1[0:num], r2[0:num])
+  elif method == "b-clustering":
+    c = sort(by_clustering(adj_list, num))
+    G = create_graph(subset(adj_list, c[0:num*4]))
+    results = sort(nx.betweenness_centrality(G))
   elif method.startswith("random"):
     return by_random(adj_list, num)
 
   # Get the top N.
-  results = sorted(list(set(results.items())), key=lambda x: x[1], reverse=True)
-  return [x[0] for x in results[0:num]]
+  return results[0:num]
 
 
 def main(graph, num, method):

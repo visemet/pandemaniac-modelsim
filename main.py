@@ -101,15 +101,23 @@ def update_points(results, db):
   """
 
   # Put the teams in order of number of nodes they have, sorted most to least.
-  ranked_teams = sorted(results, key=lambda k: len(results[k]), reverse=True)
+  # Result is a list of tuples (team, number of nodes).
+  ranked_teams = [(x[0], len(x[1])) for x in results.items()]
+  ranked_teams = sorted(ranked_teams, key=lambda k: k[1], reverse=True)
 
   # Olympic scoring. Add the score to the database.
-  for i in range(1, len(ranked_teams) + 1):
+  rank = 1
+  for i in range(len(ranked_teams)):
+    # If they have the same number of nodes as the previous rank, they are
+    # tied. They get the same points as the previous team.
+    if not (i > 0 and ranked_teams[i][1] == ranked_teams[i - 1][1]):
+      rank = i + 1
     db.test.ranks.update( \
-      {"team": ranked_teams[i - 1]}, \
-      {"$inc": {"score": POINTS[i]}}, upsert=True)
+      {"team": ranked_teams[i][0]}, \
+      {"$inc": {"score": POINTS[rank]}}, upsert=True)
 
   print str(ranked_teams)
+  print str([x[0] for x in ranked_teams])
 
 
 if __name__ == "__main__":

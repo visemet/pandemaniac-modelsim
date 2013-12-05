@@ -13,6 +13,10 @@ class MostCommonColored(Model):
     colored_neighbors = filter(None, [node_color[x] for x in neighbors])
     team_count = Counter(colored_neighbors)
 
+    # If the node is colored, it gives itself a 3/2 vote.
+    if node_color[node] is not None:
+      team_count[node_color[node]] += 1.5
+
     # List of tuples of form (team, count). Make sure the most common color
     # appears strictly more times than the second most common color.
     most_commons = team_count.most_common(2)

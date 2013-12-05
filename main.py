@@ -108,15 +108,16 @@ def update_points(results, db):
   # Olympic scoring. Add the score to the database.
   rank = 1
   for i in range(len(ranked_teams)):
+    (team, num) = ranked_teams[i]
     # If they have the same number of nodes as the previous rank, they are
     # tied. They get the same points as the previous team.
-    if not (i > 0 and ranked_teams[i][1] == ranked_teams[i - 1][1]):
+    if not (i > 0 and num == ranked_teams[i - 1][1]):
       rank = i + 1
+    # Teams that didn't get any nodes get a score of 0.
     db.test.ranks.update( \
-      {"team": ranked_teams[i][0]}, \
-      {"$inc": {"score": POINTS[rank]}}, upsert=True)
+      {"team": team}, \
+      {"$inc": {"score": (POINTS[rank] if num > 0 else 0)}}, upsert=True)
 
-  print str(ranked_teams)
   print str([x[0] for x in ranked_teams])
 
 

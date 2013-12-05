@@ -13,6 +13,10 @@ class MajorityColored(Model):
     colored_neighbors = filter(None, [node_color[x] for x in neighbors])
     team_count = Counter(colored_neighbors)
 
+    # If the node is colored, it gives itself a 3/2 vote.
+    if node_color[node] is not None:
+      team_count[node_color[node]] += 1.5
+
     most_common = team_count.most_common(1)
     if len(most_common) > 0 and \
       most_common[0][1] > len(colored_neighbors) / 2.0:

@@ -22,6 +22,10 @@ class WeightedRandom(Model):
     colored_neighbors = filter(None, [node_color[x] for x in neighbors])
     team_count = Counter(colored_neighbors)
 
+    # If the node is colored, it gives itself a 3/2 vote.
+    if node_color[node] is not None:
+      team_count[node_color[node]] += 1.5
+
     if len(team_count) > 0:
       probs = reduce(lambda x, y: x + y, \
         [[x[0]] * int(x[1]) for x in team_count.items()])

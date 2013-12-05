@@ -68,13 +68,15 @@ class Simulation:
       diff = {}
       # Randomly shuffle the nodes to iterate through in order to generate
       # the next color.
-      shuffle(nodes)
+      # TODOshuffle(nodes)
+      node_color_copy = deepcopy(node_color)
       for node in nodes:
         (changed, color) = self.model.update(node_color, node)
         # Store the node's new color only if it changed.
         if changed:
           diff[node] = color
-          node_color[node] = color
+          node_color_copy[node] = color
+      node_color = node_color_copy
 
       # Convert the mapping of a node to its color into colors and
       # corresponding nodes.
@@ -97,7 +99,6 @@ def init(color_nodes, node_color):
   returns: An initial diff.
   """
   diff = {}
-
   for (color, nodes) in color_nodes.items():
     for node in nodes:
       # More than one color has been selected for a node. They cancel out.
@@ -175,7 +176,10 @@ def final_color_mapping(colors, node_color):
   """
   Function: final_color_mapping
   -----------------------------
-  TODO
+  Computes the final mappings from colors to the nodes of that color.
+
+  colors: The list of colors.
+  node_color: A mapping from nodes to their color.
   """
   color_nodes = {}
   for color in colors:

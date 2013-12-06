@@ -28,13 +28,20 @@ POINTS = {1:20, 2:15, 3:12, 4:9, 5:7, 6:5, 7:4, 8:3, 9:2, 10:1}
 RANKS = {}
 
 def generate_nodes(graph, num):
-  compute.main(graph, num, "degree")
-  compute.main(graph, num, "closeness")
-  compute.main(graph, num, "betweenness")
-  compute.main(graph, num, "clustering")
-  compute.main(graph, num, "random")
-  compute.main(graph, num, "random2")
-  compute.main(graph, num, "random3")
+  """
+  Function: generate_nodes
+  ------------------------
+  Generate nodes for all the methods.
+  """
+  #compute.main(graph, num, "degree")
+  #compute.main(graph, num, "closeness")
+  #compute.main(graph, num, "betweenness")
+  #compute.main(graph, num, "clustering")
+  #compute.main(graph, num, "random")
+  #compute.main(graph, num, "random2")
+  compute.main(graph, num, "r-closeness")
+  compute.main(graph, num, "r-betweenness")
+  #compute.main(graph, num, "random3")
 
 
 def create_adj_list(graph):
@@ -116,16 +123,16 @@ def update_points(f, results):
   # Olympic scoring.
   rank = 1
   for i in range(len(ranked_teams)):
-    points = 0
-    if ranked_teams[i][0] not in RANKS:
-      RANKS[ranked_teams[i][0]] = 0
+    team = ranked_teams[i][0]
+    if team not in RANKS:
+      RANKS[team] = []
 
     # If they have the same number of nodes as the previous rank, they are
     # tied.
     if not (i > 0 and ranked_teams[i][1] == ranked_teams[i - 1][1]):
       rank = i + 1
-    f.write("(" + ranked_teams[i][0] + ", " + str(POINTS[rank]) + ")\t")
-    RANKS[ranked_teams[i][0]] += POINTS[rank]
+    f.write("(" + team + ", " + str(rank) + ")\t")
+    RANKS[team].append(rank)
   f.write("\n")
 
 
@@ -134,10 +141,9 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description='Get the model.')
   parser.add_argument("--model")
   parser.add_argument("--num")
+  parser.add_argument("--teams", nargs='+')
   args = parser.parse_args()
-  (num, model) = (int(args.num), args.model)
-  teams = ["random", "random2", "random3", "clustering", "betweenness", \
-    "closeness", "degree"]
+  (num, model, teams) = (int(args.num), args.model, args.teams)
 
   # Usage message.
   if model is None:
@@ -160,11 +166,23 @@ if __name__ == "__main__":
     simulation = Simulation(MAX_ROUNDS, model, team_nodes, adj_list)
     (_, results) = simulation.run()
     num_graphs += 1
+    print "Processed " + str(int(num_graphs)) + " graphs."
 
     # Get the final results of teams to their nodes and update their points.
     update_points(f, results)
 
+  def var(lst):
+    average = sum(lst) / len(lst) * 1.0
+    var = sum((average - val) ** 2 for val in lst) / len(lst)
+    return var
+
+
   # Results of all runs.
   f.close()
-  RANKS = sorted(RANKS.items(), key=lambda x: x[1], reverse=True)
-  print str([(a, b / num_graphs) for (a, b) in RANKS])
+  avg_ranks = sorted([(team, sum(ranks) / (len(ranks) * 1.0)) \
+    for (team, ranks) in RANKS.items()], \
+    key=lambda x: x[1])
+  var_ranks = sorted([(team, var(ranks)) for (team, ranks) in RANKS.items()], \
+    key=lambda x: x[1], reverse=True)
+  print "\nAverage Rank:", str(avg_ranks)
+  print "\nVariance of Rank:", str(var_ranks),

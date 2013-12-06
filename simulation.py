@@ -58,7 +58,13 @@ class Simulation:
 
     # Choose the initial colors for the nodes.
     diff = init(self.color_nodes, node_color)
-    output["0"] = to_color_mapping(diff)
+    color_mappings = to_color_mapping(diff)
+
+    # Make sure all colors are in the initial diff.
+    for color in self.color_nodes.keys():
+      if color not in color_mappings:
+        color_mappings[color] = []
+    output["0"] = color_mappings
     generation = 1
 
     # Keep calculating the epidemic until it stops changing.

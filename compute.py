@@ -31,6 +31,27 @@ def randomize(lst1, lst2):
   return result
 
 
+def normal_random(lst, n):
+  """
+  Function: normal_random
+  -----------------------
+  Gets n random numbers from lst with probabilities drawn from a normal
+  distribution.
+
+  lst: The list to drawn from.
+  n: The number of values to choose from that list.
+  """
+  # Indices to choose from.
+  indices = set()
+  while len(indices) < n:
+    i = abs(int(random.normalvariate(0, int(n * 1.5))))
+    if i >= len(lst):
+      i = len(lst) - 1
+    indices.add(i)
+
+  return [lst[i] for i in indices]
+
+
 def sort(nodes):
   """
   Function: sort
@@ -50,11 +71,11 @@ def subset(adj_list, nodes):
   return dict([x for x in adj_list.items() if x[0] in nodes])
 
 
-def by_clustering(adj_list, num):
+def by_clustering(adj_list):
   """
   Function: by_clustering
   -----------------------
-  Finds the top num nodes with the highest clustering.
+  Finds the nodes and their clustering coefficient.
   """
 
   def get_triangles(node):
@@ -113,22 +134,53 @@ def get_top_N(adj_list, method, num):
   """
   G = create_graph(adj_list)
   results = {}
+
+  # Top nodes by degree.
   if method == "degree":
     results = sort(nx.degree_centrality(G))
+
+  # Get the top n * 3 nodes, then draw n nodes from that using a randomly
+  # drawn variable from a normal distribution.
+  elif method == "r-degree":
+    results = sort(nx.degree_centrality(G))
+    results = normal_random(results, num)
+
   elif method == "closeness":
     results = sort(nx.closeness_centrality(G))
+
+  elif method == "r-closeness":
+    results = sort(nx.closeness_centrality(G))
+    results = normal_random(results, num)
+
   elif method == "betweeness" or method == "betweenness":
     results = sort(nx.betweenness_centrality(G))
+
+  elif method == "r-betweenness" or method == "r-betweeness":
+    results = sort(nx.betweenness_centrality(G))
+    results = normal_random(results, num)
+
   elif method == "clustering":
-    results = sort(by_clustering(adj_list, num))
-  elif method == "degree-clustering":
+    results = sort(by_clustering(adj_list))
+
+  elif method == "r-clustering":
+    results = sort(by_clustering(adj_list))
+    results = normal_random(results, num)
+
+  # Finds the top nodes by degree and clustering, and randomly chooses between
+  # the two methods.
+  elif method == "d-clustering":
     r1 = sort(nx.degree_centrality(G))
-    r2 = sort(by_clustering(adj_list, num))
+    r2 = sort(by_clustering(adj_list))
     results = randomize(r1[0:num], r2[0:num])
+
+  # Finds the top nodes first by clustering, then computes the betweenness of
+  # those nodes and finds the top nodes.
   elif method == "b-clustering":
     c = sort(by_clustering(adj_list, num))
     G = create_graph(subset(adj_list, c[0:num*4]))
     results = sort(nx.betweenness_centrality(G))
+
+  # Randomly generates nodes.
   elif method.startswith("random"):
     return by_random(adj_list, num)
 

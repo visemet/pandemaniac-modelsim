@@ -121,20 +121,8 @@ def update_points(results, db):
   print str([x[0] for x in ranked_teams])
 
 
-if __name__ == "__main__":
-  # Parse the command-line arguments to get the graph and teams participating.
-  parser = argparse.ArgumentParser(description='Get the graph and teams.')
-  parser.add_argument("--graph")
-  parser.add_argument("--teams", nargs='+')
-  parser.add_argument("--model")
-  args = parser.parse_args()
-  (graph, teams, model) = (args.graph, args.teams, args.model)
-
-  # Usage message.
-  if graph is None or teams is None or model is None:
-    print "Usage: main.py --graph [graph name] --teams " + \
-      "[list of team names] --model [model name]"
-    sys.exit(0)
+def do_main(graph, teams, model):
+  print "Graph:", graph, "  Teams:", teams
 
   # Create the adjacency list for the graph.
   adj_list = create_adj_list(graph)
@@ -159,3 +147,21 @@ if __name__ == "__main__":
   # Get the final results of teams to their nodes and update their points in
   # the database.
   update_points(results, db)
+
+
+if __name__ == "__main__":
+  # Parse the command-line arguments to get the graph and teams participating.
+  parser = argparse.ArgumentParser(description='Get the graph and teams.')
+  parser.add_argument("--graph")
+  parser.add_argument("--teams", nargs='+')
+  parser.add_argument("--model")
+  args = parser.parse_args()
+  (graph, teams, model) = (args.graph, args.teams, args.model)
+
+  # Usage message.
+  if graph is None or teams is None or model is None:
+    print "Usage: main.py --graph [graph name] --teams " + \
+      "[list of team names] --model [model name]"
+    sys.exit(0)
+
+  do_main(graph, teams, model)

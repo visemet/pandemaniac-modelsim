@@ -12,8 +12,8 @@ def get_match(n, teams):
   for i in xrange(len(teams) / n + 1):
     if i * n == len(teams): break
     else:
-      matches.append(" ".join(
-        teams[i*n : ((i+1)*n if (i+1)*n <= len(teams) else len(teams))]))
+      matches.append(
+        teams[i*n : ((i+1)*n if (i+1)*n <= len(teams) else len(teams))])
 
   return matches
 

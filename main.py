@@ -151,10 +151,11 @@ if __name__ == "__main__":
 
   # Connect to MongoDB to store results.
   db = MongoClient(DB_SERVER, DB_PORT)
-  db.test.attempts.update( \
-    {"graph": graph, "team": {"$in": teams}}, \
-    {"$set": {"file": output_filename}}, multi=True)
-
+  db.test.runs.insert({ \
+    "teams": {"$in": teams}, \
+    "graph": graph, \
+    "file": output_filename \
+  })
   # Get the final results of teams to their nodes and update their points in
   # the database.
   update_points(results, db)

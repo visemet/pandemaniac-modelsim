@@ -3,14 +3,25 @@ pandemaniac-modelsim
 Backend code for the Pandemaniac contest.
 
 
-Usage
------
+Script Usage
+------------
+This is what's going to be used for the practice and competition rounds. The graphs used for the
+competition and the teams participating are all pre-set in the `run.py` script.
 
-    main.py --teams [team names separated by spaces] --graph [graph name]
-    main.py --teams foo bar baz --graph 2.1.1
+    run.py --day [day or competition round] --teams [teams competing]
+    run.py --day 4 --teams a b c d
 
-Model is currently set to `majority_colored` (the model selection code has been commented out,
-but can be added back). If model selection were available, this would be run by:
+For example, for competition round 2:
+
+    run.py --day c2 --teams a b c d
+
+There must be at least 8 teams. If not, filler teams should be added:
+
+    run.py --day3 --teams a b c d e f filler1 filler2
+
+
+Simulation Usage
+----------------
 
     main.py --teams [team names separated by spaces] --graph [graph name] --model [model name]
     main.py --teams foo bar baz --graph 2.1.1 --model weighted_random

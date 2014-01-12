@@ -15,6 +15,20 @@ import time
 from CONFIG import *
 from simulation import Simulation
 
+db = MongoClient(DB_SERVER, DB_PORT)
+
+def get_graph(graph):
+  """
+  Function: get_graph
+  -------------------
+  Gets the actual file name of the graph specified by graph.
+  """
+  f = db.test.graphs.find_one({ "name" : graph })
+  if f is not None:
+    return f["file"]
+  return None
+
+
 def create_adj_list(graph):
   """
   Function: create_adj_list
@@ -25,7 +39,7 @@ def create_adj_list(graph):
   graph: The graph to create an adjacency list for.
   returns: An adjacency list.
   """
-  graph_file = open(GRAPH_FOLDER + graph, "r")
+  graph_file = open(GRAPH_FOLDER + get_graph(graph), "r")
   adj_list = json.loads("".join(graph_file.readlines()))
   # Convert the values to strings.
   for key in adj_list.keys():
@@ -75,7 +89,7 @@ def read_nodes(graph, valid_nodes, teams):
   return team_nodes
 
 
-def update_points(results, db):
+def update_points(results):
   """
   Function: update_points
   -----------------------
@@ -84,7 +98,6 @@ def update_points(results, db):
   results: The results of this run. Is a dictionary with the keys as the teams
            and values as the nodes for that team. Computes the number of points
            each team gets by the number of nodes they have.
-  db: The client for the MongoDB connection.
   """
 
   # Put the teams in order of number of nodes they have, sorted most to least.
@@ -93,6 +106,7 @@ def update_points(results, db):
   ranked_teams = sorted(ranked_teams, key=lambda k: k[1], reverse=True)
 
   # Olympic scoring. Add the score to the database.
+  scores = {}
   rank = 1
   for i in range(len(ranked_teams)):
     (team, num) = ranked_teams[i]
@@ -101,11 +115,9 @@ def update_points(results, db):
     if not (i > 0 and num == ranked_teams[i - 1][1]):
       rank = i + 1
     # Teams that didn't get any nodes get a score of 0.
-    db.test.ranks.update( \
-      {"team": team}, \
-      {"$inc": {"score": (POINTS[rank] if num > 0 else 0)}}, upsert=True)
+    scores[team] = (POINTS[rank] if num > 0 else 0)
 
-  print str([x[0] for x in ranked_teams])
+  return scores
 
 
 def do_main(graph, teams, model):
@@ -124,16 +136,15 @@ def do_main(graph, teams, model):
   output_file.write(str(json.dumps(output)))
   output_file.close()
 
-  # Connect to MongoDB to store results.
-  db = MongoClient(DB_SERVER, DB_PORT)
+  # Get the final results of teams to their nodes and update their points in
+  # the database.
+  scores = update_points(results)
   db.test.runs.insert({ \
     "teams": {"$in": teams}, \
+    "scores": scores, \
     "graph": graph, \
     "file": output_filename \
   })
-  # Get the final results of teams to their nodes and update their points in
-  # the database.
-  update_points(results, db)
 
 
 if __name__ == "__main__":

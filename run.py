@@ -1,6 +1,6 @@
 from CONFIG import *
 from match import get_match
-from main import do_main
+from main import do_main, get_graph
 
 import argparse
 import json
@@ -9,7 +9,7 @@ import random
 
 def create_random_team(graph, num_nodes, name):
   # Open graph file and get random nodes.
-  graph_file = open(GRAPH_FOLDER + graph, "r")
+  graph_file = open(GRAPH_FOLDER + get_graph(graph), "r")
   adj_list = json.loads("".join(graph_file.readlines()))
   graph_file.close()
   nodes = random.sample(adj_list.keys(), num_nodes)
@@ -51,8 +51,3 @@ if __name__ == "__main__":
       matches = get_match(num_teams, teams)
       for match in matches:
         do_main(graph, match, "majority_colored")
-
-
-# Location of files.
-GRAPH_FOLDER = "private/graphs/"
-TEAMS_FOLDER = "private/uploads/"

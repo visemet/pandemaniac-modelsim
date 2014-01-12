@@ -9,24 +9,11 @@ import argparse
 import json
 import os
 from pymongo import MongoClient
-from simulation import Simulation
 import sys
 import time
 
-# Location of files.
-GRAPH_FOLDER = "private/graphs/"
-TEAMS_FOLDER = "private/uploads/"
-OUTPUT_FOLDER = "private/runs/"
-
-# MongoDB configuration.
-DB_SERVER = "localhost"
-DB_PORT = 27017
-
-# Maximum number of generations to run the simulation.
-MAX_ROUNDS = 100
-
-# Points for places.
-POINTS = {1:20, 2:15, 3:12, 4:9, 5:7, 6:5, 7:4, 8:3, 9:2, 10:1}
+from CONFIG import *
+from simulation import Simulation
 
 def create_adj_list(graph):
   """

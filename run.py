@@ -1,100 +1,27 @@
+from CONFIG import *
 from match import get_match
 from main import do_main
 
 import argparse
+import json
+import os
+import random
 
-DAYS = {
-  "1": [
-    # ([graph name], [number of players]) OR
-    # ([graph name], [team name]) which means it's a 1 vs. 1 with a specific
-    #                             TA team and a student team.
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-    ("2.10.x", "TA-degree"),
-    ("2.10.x", "TA-fewer"),
-    ("2.10.x", "TA-eyeball")
-  ],
-  "2": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-    ("2.10.x", "TA-degree"),
-    ("2.10.x", "TA-fewer"),
-    ("2.10.x", "TA-eyeball")
-  ],
-  "3": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-    ("2.10.x", "TA-degree"),
-    ("2.10.x", "TA-fewer"),
-    ("2.10.x", "TA-eyeball")
-  ],
-  "4": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-    ("2.10.x", "TA-degree"),
-    ("2.10.x", "TA-fewer"),
-    ("2.10.x", "TA-eyeball")
-  ],
-  "5": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-    ("2.10.x", "TA-degree"),
-    ("2.10.x", "TA-fewer"),
-    ("2.10.x", "TA-eyeball")
-  ],
-  "round1": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-  ],
-  "round2": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-  ],
-  "round3": [
-    ("2.5.x", 2),
-    ("4.5.x", 4),
-    ("4.10.x", 4),
-    ("8.10.x", 8),
-    ("8.20.x", 8),
-    ("8.x.x", 8),
-    ("8.x.x", 8),
-  ]
-}
+def create_random_team(graph, num_nodes, name):
+  # Open graph file and get random nodes.
+  graph_file = open(GRAPH_FOLDER + graph, "r")
+  adj_list = json.loads("".join(graph_file.readlines()))
+  graph_file.close()
+  nodes = random.sample(adj_list.keys(), num_nodes)
+
+  # Write out to file.
+  if not os.path.exists(TEAMS_FOLDER + name):
+    os.makedirs(TEAMS_FOLDER + name)
+  output = open(TEAMS_FOLDER + name + "/" + graph + "-" + str(num_nodes), "w")
+  for node in nodes:
+    output.write(str(node) + "\n")
+  output.close()
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -106,7 +33,7 @@ if __name__ == "__main__":
 
   config = DAYS[day]
   # Loop through each graph for this day/competition round.
-  for (graph, num_teams) in config:
+  for (graph, num_teams, num_nodes) in config:
     # If this is a one-on-one with a TA team.
     if type(num_teams) == str:
       ta_team = num_teams
@@ -115,6 +42,17 @@ if __name__ == "__main__":
 
     # Otherwise match just the student teams.
     else:
+      # If there aren't enough teams to play on this graph, create random
+      # teams.
+      if len(teams) < num_teams:
+        for i in range(num_teams - len(teams)):
+          create_random_team(graph, num_nodes, "filler" + str(i + 1))
+          teams.append("filler" + str(i + 1))
       matches = get_match(num_teams, teams)
       for match in matches:
         do_main(graph, match, "majority_colored")
+
+
+# Location of files.
+GRAPH_FOLDER = "private/graphs/"
+TEAMS_FOLDER = "private/uploads/"

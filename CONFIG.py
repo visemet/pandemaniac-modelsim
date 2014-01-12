@@ -1,10 +1,10 @@
 # Location of files.
-GRAPH_FOLDER = "private/graphs/"
-TEAMS_FOLDER = "private/uploads/"
-OUTPUT_FOLDER = "private/runs/"
+GRAPH_FOLDER = "../pandemaniac-graphui/private/graphs/"
+TEAMS_FOLDER = "../pandemaniac-graphui/private/uploads/"
+OUTPUT_FOLDER = "../pandemaniac-graphui/private/runs/"
 
 # MongoDB configuration.
-DB_SERVER = "localhost"
+DB_SERVER = "cs144.cms.caltech.edu"
 DB_PORT = 27017
 
 # Maximum number of generations to run the simulation.

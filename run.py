@@ -29,11 +29,12 @@ if __name__ == "__main__":
   parser.add_argument("--day")
   parser.add_argument("--teams", nargs="+")
   args = parser.parse_args()
-  (day, teams) = (args.day, args.teams)
+  (day, orig_teams) = (args.day, args.teams)
 
   config = DAYS[day]
   # Loop through each graph for this day/competition round.
   for (graph, num_teams, num_nodes) in config:
+    teams = [x for x in orig_teams]
     # If this is a one-on-one with a TA team.
     if type(num_teams) == str:
       ta_team = num_teams

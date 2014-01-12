@@ -71,7 +71,8 @@ def read_nodes(graph, valid_nodes, teams):
       team_file = open(team_dir + team_file_name, "r")
 
       # Read in all of the nodes and filter out spaces and newlines.
-      nodes = filter(lambda x: x.strip(), team_file.read().split("\n"))
+      nodes = filter(lambda x: x, \
+        [x.strip().replace("\r", "") for x in team_file.read().split("\n")])
       team_file.close()
 
       # The list of nodes a team submits should now be valid.
@@ -79,11 +80,11 @@ def read_nodes(graph, valid_nodes, teams):
       if is_valid:
         team_nodes[team] = nodes
       else:
-        raise Exception("Nodes for team " + team + " are not valid.")
+        print "Nodes for team " + team + " are not valid."
 
     # If no file is found, then this team did not have a submission. They do
     # not get any nodes.
-    except OSError:
+    except (OSError, Exception, ValueError):
       team_nodes[team] = []
 
   return team_nodes
@@ -121,7 +122,7 @@ def update_points(results):
 
 
 def do_main(graph, teams, model):
-  print "Graph:", graph, "  Teams:", teams
+  print "\n\nGraph:", graph, "  Teams:", teams
 
   # Create the adjacency list for the graph.
   adj_list = create_adj_list(graph)
@@ -140,7 +141,7 @@ def do_main(graph, teams, model):
   # the database.
   scores = update_points(results)
   db.test.runs.insert({ \
-    "teams": {"$in": teams}, \
+    "teams": teams, \
     "scores": scores, \
     "graph": graph, \
     "file": output_filename \

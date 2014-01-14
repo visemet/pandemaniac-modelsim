@@ -1,6 +1,6 @@
 from collections import Counter, OrderedDict
 from copy import deepcopy
-from random import shuffle
+from random import shuffle, randint
 
 class Simulation:
   """
@@ -9,9 +9,10 @@ class Simulation:
   Simulates the epidemic using different epidemic models.
   """
 
-  def __init__(self, max_rounds, model, color_nodes, adj_list):
-    # The maximum number of rounds to run the simulation.
-    self.max_rounds = max_rounds
+  def __init__(self, model, color_nodes, adj_list):
+    # The maximum number of rounds to run the simulation. Randomly chosen
+    # number between 100 and 200.
+    self.max_rounds = randint(100, 200)
     # A mapping of the colors and the nodes of that color.
     self.color_nodes = color_nodes
     # The adjacency list of the graph.
@@ -72,9 +73,7 @@ class Simulation:
     while not is_stable(generation, self.max_rounds, output):
       print ".",
       diff = {}
-      # Randomly shuffle the nodes to iterate through in order to generate
-      # the next color.
-      # TODOshuffle(nodes)
+      # Get the next color for the nodes.
       node_color_copy = deepcopy(node_color)
       for node in nodes:
         (changed, color) = self.model.update(node_color, node)
@@ -115,7 +114,7 @@ def init(color_nodes, node_color):
         node_color[node] = color
         diff[node] = color
   # Now set all the conflicts back to None since those nodes don't get any
-  # color..
+  # color.
   for (node, color) in node_color.items():
     if color == "__CONFLICT__":
       node_color[node] = None

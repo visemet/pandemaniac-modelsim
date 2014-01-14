@@ -33,10 +33,10 @@ Possible models include:
 * `random_p`
 * `weighted_random`
 
-
 Tools
 -----
 * Python 2.7 (32-bit)
 * [pymongo 2.6.2](http://api.mongodb.org/python/current/installation.html)
+  Install with `python setup.py install --user` 
 * [MongoDB 2.4.6](http://www.mongodb.org/downloads)
 

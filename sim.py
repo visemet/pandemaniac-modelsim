@@ -34,10 +34,14 @@ USAGE = '''
 Returns a dictionary containing the names and the number of nodes they got.
 
 Example:
->>> graph = {"2": ["6", "3", "7", 2"], "3": ["2", "7, "12], ... }
+>>> graph = {"2": ["6", "3", "7", "2"], "3": ["2", "7, "12"], ... }
 >>> nodes = {"strategy1": ["1", "5"], "strategy2": ["5", "23"], ... }
 >>> sim.run(graph, nodes)
 >>> {"strategy1": 243, "strategy6": 121, "strategy2": 13}
+
+Possible Errors:
+- KeyError: Will occur if any seed nodes are invalid (i.e. do not exist on the
+            graph).
 '''
 
 from collections import Counter, OrderedDict

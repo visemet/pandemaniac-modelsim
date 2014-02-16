@@ -116,7 +116,7 @@ def update_points(results):
     if not (i > 0 and num == ranked_teams[i - 1][1]):
       rank = i + 1
     # Teams that didn't get any nodes get a score of 0.
-    scores[team] = (POINTS[rank] if num > 0 else 0)
+    scores[team] = (POINTS[rank] if (rank <= len(POINTS) and num > 0) else 0)
 
   return scores
 

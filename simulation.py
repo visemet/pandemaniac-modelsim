@@ -106,6 +106,9 @@ def init(color_nodes, node_color):
   diff = {}
   for (color, nodes) in color_nodes.items():
     for node in nodes:
+      # If this does not exist in the graph.
+      if node not in node_color:
+        continue
       # More than one color has been selected for a node. They cancel out.
       if node_color[node] is not None:
         node_color[node] = "__CONFLICT__"

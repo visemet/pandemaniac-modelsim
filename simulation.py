@@ -99,7 +99,7 @@ def init(color_nodes, node_color):
   Initializes nodes for each color. If more than one color is selected for a
   node, then that node does not any of the colors.
 
-  color_nodes: A mapping of a color to the nodes of that color..
+  color_nodes: A mapping of a color to the nodes of that color.
   node_color: Mapping of nodes to their color.
   returns: An initial diff.
   """
